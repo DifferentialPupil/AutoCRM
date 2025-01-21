@@ -8,21 +8,25 @@ CREATE TYPE custom_field_type AS ENUM ('text', 'number', 'date', 'select');
 
 -- 1. users table
 CREATE TABLE IF NOT EXISTS users (
-  id               BIGSERIAL PRIMARY KEY,
+  id               UUID NOT NULL PRIMARY KEY,
   email            VARCHAR(255) UNIQUE NOT NULL,
   password_hash    VARCHAR(255) NOT NULL,
   role             user_role NOT NULL DEFAULT 'customer',
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT fk_users_auth
+    FOREIGN KEY (id)
+    REFERENCES auth.users (id)
+    ON DELETE CASCADE
 );
 
 -- 2. tickets table
 CREATE TABLE IF NOT EXISTS tickets (
-  id               BIGSERIAL PRIMARY KEY,
+  id               UUID PRIMARY KEY UNIQUE,
   title            VARCHAR(255) NOT NULL,
   status           ticket_status NOT NULL DEFAULT 'open',
   priority         ticket_priority NOT NULL DEFAULT 'low',
-  customer_id      BIGINT NOT NULL,
+  customer_id      UUID NOT NULL,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT fk_tickets_customer
@@ -34,7 +38,7 @@ CREATE TABLE IF NOT EXISTS tickets (
 
 -- 3. tags table
 CREATE TABLE IF NOT EXISTS tags (
-  id               BIGSERIAL PRIMARY KEY,
+  id               UUID PRIMARY KEY,
   name             VARCHAR(255) NOT NULL,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -42,9 +46,9 @@ CREATE TABLE IF NOT EXISTS tags (
 
 -- 4. ticket_tags table (junction for many-to-many between tickets and tags)
 CREATE TABLE IF NOT EXISTS ticket_tags (
-  id         BIGSERIAL PRIMARY KEY,
-  ticket_id  BIGINT NOT NULL,
-  tag_id     BIGINT NOT NULL,
+  id         UUID PRIMARY KEY,
+  ticket_id  UUID NOT NULL,
+  tag_id     UUID NOT NULL,
   CONSTRAINT fk_ticket_tags_ticket
     FOREIGN KEY (ticket_id)
     REFERENCES tickets (id)
@@ -61,7 +65,7 @@ CREATE TABLE IF NOT EXISTS ticket_tags (
 
 -- 5. custom_fields table
 CREATE TABLE IF NOT EXISTS custom_fields (
-  id               BIGSERIAL PRIMARY KEY,
+  id               UUID PRIMARY KEY,
   name             VARCHAR(255) NOT NULL,
   field_type       custom_field_type NOT NULL,
   required         BOOLEAN NOT NULL DEFAULT FALSE,
@@ -71,9 +75,9 @@ CREATE TABLE IF NOT EXISTS custom_fields (
 
 -- 6. ticket_custom_fields table
 CREATE TABLE IF NOT EXISTS ticket_custom_fields (
-  id                BIGSERIAL PRIMARY KEY,
-  ticket_id         BIGINT NOT NULL,
-  custom_field_id   BIGINT NOT NULL,
+  id                UUID PRIMARY KEY,
+  ticket_id         UUID NOT NULL,
+  custom_field_id   UUID NOT NULL,
   value             TEXT,
   created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -94,9 +98,9 @@ CREATE TABLE IF NOT EXISTS ticket_custom_fields (
 
 -- 7. internal_notes table
 CREATE TABLE IF NOT EXISTS internal_notes (
-  id               BIGSERIAL PRIMARY KEY,
-  ticket_id        BIGINT NOT NULL,
-  user_id          BIGINT NOT NULL,
+  id               UUID PRIMARY KEY,
+  ticket_id        UUID NOT NULL,
+  user_id          UUID NOT NULL,
   note_content     TEXT NOT NULL,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -114,9 +118,9 @@ CREATE TABLE IF NOT EXISTS internal_notes (
 
 -- 8. ticket_comments table
 CREATE TABLE IF NOT EXISTS ticket_comments (
-  id               BIGSERIAL PRIMARY KEY,
-  ticket_id        BIGINT NOT NULL,
-  user_id          BIGINT NOT NULL,
+  id               UUID PRIMARY KEY,
+  ticket_id        UUID NOT NULL,
+  user_id          UUID NOT NULL,
   comment_content  TEXT NOT NULL,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
