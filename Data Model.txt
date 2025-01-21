@@ -1,0 +1,48 @@
+**Data Models with Fields and Relationships**  
+1. **User**  
+   - Fields: id (PK), email, password_hash, role (enum: “customer”, “employee”, “admin”), created_at, updated_at  
+   - Relationship: Has many Tickets, InternalNotes, and TicketComments.  
+
+2. **Ticket**  
+   - Fields: id (PK), title, status (e.g. “open”, “pending”, “resolved”), priority (e.g. “low”, “medium”, “high”), customer_id (FK -> User), created_at, updated_at  
+   - Relationship: Belongs to a User (customer). Has many InternalNotes and TicketComments. Can have many Tags through a junction table.  
+
+3. **Tag**  
+   - Fields: id (PK), name, created_at, updated_at  
+   - Relationship: Many-to-many with Tickets via TicketTags.  
+
+4. **TicketTags** (junction table)  
+   - Fields: id (PK), ticket_id (FK -> Ticket), tag_id (FK -> Tag)  
+
+5. **CustomField**  
+   - Fields: id (PK), name, field_type (e.g. “text”, “number”, “date”, “select”), required (boolean), created_at, updated_at  
+   - Relationship: Used to define possible custom fields for tickets.  
+
+6. **TicketCustomField**  
+   - Fields: id (PK), ticket_id (FK -> Ticket), custom_field_id (FK -> CustomField), value (text), created_at, updated_at  
+   - Relationship: Allows per-ticket values for each custom field.  
+
+7. **InternalNote**  
+   - Fields: id (PK), ticket_id (FK -> Ticket), user_id (FK -> User), note_content (text), created_at, updated_at  
+   - Relationship: Belongs to Ticket and belongs to User (employee or admin).  
+
+8. **TicketComment**  
+   - Fields: id (PK), ticket_id (FK -> Ticket), user_id (FK -> User), comment_content (text), created_at, updated_at  
+   - Relationship: Belongs to Ticket and belongs to User (could be customer, employee, or admin), capturing a full conversation history.  
+
+**Core Functionality Requirements**  
+1. The system must create, update, and fetch tickets using the Ticket model.  
+2. The system must support attaching custom fields to tickets using the TicketCustomField model.  
+3. The system must allow adding tags to tickets using the TicketTags junction.  
+4. The system must handle internal notes for collaboration using the InternalNote model.  
+5. The system must store user comments and conversation history in TicketComment records.  
+6. The system must enable employees to update ticket status and priority for workflow tracking.  
+7. The system must support searching and filtering tickets by status, priority, or tags.  
+8. The system must allow administrators to set or modify custom fields, roles, and user permissions.  
+
+**Authorization Requirements**  
+1. Customers can create and view their own tickets, add comments, and update ticket details if allowed by status.  
+2. Employees can view and edit any ticket’s details, add internal notes, and update its custom fields.  
+3. Administrators can manage user roles, manage custom fields, and view or edit all tickets.  
+4. Only administrators can manage global settings, such as adding new custom fields or new tags system-wide.  
+5. Supabase Row Level Security policies must ensure each user can see only permitted data (e.g. customers see only their tickets, employees and admins see all).

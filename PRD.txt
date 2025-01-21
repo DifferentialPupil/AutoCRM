@@ -1,0 +1,48 @@
+**Project Overview**  
+AutoCRM is a customer support platform that manages tickets, tracks customer interactions, and streamlines workflow for customers, employees, and administrators. It ensures efficient issue resolution through collaborative features, customizable fields, and role-based access.
+
+---
+
+**User Roles & Core Workflows**  
+1. Customers file tickets, add comments, and view personal ticket statuses.  
+2. Employees access, update, and prioritize tickets, collaborating through internal notes.  
+3. Administrators oversee ticket data, manage user roles, and define custom fields or tags.
+
+---
+
+**Technical Foundation**  
+
+• Data Models  
+  – User: Stores user info and roles (customer, employee, admin).  
+  – Ticket: Captures title, status, priority, and links to a customer.  
+  – Tag & TicketTags: Many-to-many for ticket categorization.  
+  – CustomField & TicketCustomField: Stores dynamic custom data on tickets.  
+  – InternalNote: Records private employee/admin notes.  
+  – TicketComment: Stores public conversation visible to customers.  
+
+• API Endpoints  
+  – /api/auth: Registration and login.  
+  – /api/tickets: Create, view, update, delete tickets.  
+  – /api/tickets/:ticketId/comments: Add or fetch ticket comments.  
+  – /api/tickets/:ticketId/internal-notes: Manage internal notes for employees/admins.  
+  – /api/tickets/:ticketId/tags: Add or remove tags.  
+  – /api/custom-fields: Define and fetch custom field metadata.  
+  – /api/tickets/:ticketId/custom-fields: Assign custom field values on a ticket.  
+  – /api/users: Manage users and roles (admin only).  
+
+• Key Components  
+  – LoginPage & RegisterPage: Authenticate and onboard users.  
+  – TicketsListPage: Filterable view of tickets by role.  
+  – TicketDetailPage: Displays ticket data, comments, and internal notes.  
+  – CustomFieldsPage: Create and manage fields (admin only).  
+  – UserManagementPage: Adjust user roles (admin only).  
+
+---
+
+**MVP Launch Requirements**  
+1. Implement role-based access for customers, employees, and admins.  
+2. Enable basic ticket creation, viewing, updating, and deletion.  
+3. Provide comment threads and internal notes.  
+4. Offer custom field definition and assignment.  
+5. Ensure secure authentication and authorization with Supabase Row Level Security.  
+6. Deliver a functional frontend with filterable ticket views and a ticket detail screen.  

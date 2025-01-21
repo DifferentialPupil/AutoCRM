@@ -1,0 +1,136 @@
+**1. API Routes with HTTP Methods and Auth Requirements**  
+1. POST /api/auth/register  
+   • Allows new user registration.  
+   • No authentication required, but possible throttling to prevent abuse.  
+
+2. POST /api/auth/login  
+   • Authenticates a user and returns a session/JWT.  
+   • No authentication required, but username/password validation needed.  
+
+3. GET /api/tickets  
+   • Returns a list of tickets.  
+   • Employees, admins can see all tickets.  
+   • Customers see only their own tickets per RLS policy.  
+
+4. POST /api/tickets  
+   • Creates a new ticket.  
+   • Customer, employee, or admin can create. Authentication required.  
+
+5. GET /api/tickets/:ticketId  
+   • Returns a single ticket by ID.  
+   • Employees, admins can view any.  
+   • Customers see only their own ticket.  
+
+6. PATCH /api/tickets/:ticketId  
+   • Updates ticket details (status, priority, etc.).  
+   • Employees, admins always authorized; customers may be limited to certain fields.  
+
+7. DELETE /api/tickets/:ticketId  
+   • Deletes or archives a ticket.  
+   • Admin-only to prevent accidental data loss.  
+
+8. POST /api/tickets/:ticketId/comments  
+   • Adds a comment to the ticket.  
+   • Customer, employee, or admin can comment if they have access.  
+
+9. GET /api/tickets/:ticketId/comments  
+   • Returns all comments for a ticket.  
+   • Visible to ticket participants (customer, employees, admin).  
+
+10. POST /api/tickets/:ticketId/internal-notes  
+   • Adds an internal note to the ticket.  
+   • Employee or admin authentication required.  
+
+11. GET /api/tickets/:ticketId/internal-notes  
+   • Returns internal notes for a ticket.  
+   • Employee or admin authentication required.  
+
+12. POST /api/tickets/:ticketId/tags  
+   • Adds tags to a ticket.  
+   • Employee or admin authentication required.  
+
+13. DELETE /api/tickets/:ticketId/tags/:tagId  
+   • Removes a tag from a ticket.  
+   • Employee or admin authentication required.  
+
+14. POST /api/custom-fields  
+   • Adds new custom field definitions.  
+   • Admin authentication required.  
+
+15. GET /api/custom-fields  
+   • Retrieves a list of defined custom fields.  
+   • Employee, admin can view all.  
+
+16. POST /api/tickets/:ticketId/custom-fields  
+   • Sets values for a ticket's custom fields.  
+   • Employee or admin authentication required.  
+
+17. GET /api/users  
+   • Retrieves users for admin oversight.  
+   • Admin authentication required.  
+
+18. PATCH /api/users/:userId  
+   • Updates user roles or profile information.  
+   • Admin authentication required.  
+
+---
+
+**2. Page Structure and Components Needed**  
+1. /login (LoginPage)  
+   • Collects user credentials and submits them to the authentication endpoint.  
+   • Includes a “Sign Up” link if self-service registration is supported.  
+
+2. /register (RegisterPage)  
+   • Gathers user information and calls POST /api/auth/register.  
+   • Redirects upon successful registration.  
+
+3. /tickets (TicketsListPage)  
+   • Displays a list of tickets relevant to the user.  
+   • Includes filters for status, priority, and tags.  
+
+4. /tickets/[ticketId] (TicketDetailPage)  
+   • Shows ticket details, comments, and internal notes (if user is employee or admin).  
+   • CommentsSection component for user-facing conversation.  
+   • InternalNotesSection component for employees/admin.  
+   • TicketData component to display ticket fields and a form to update status/priority.  
+
+5. /admin/custom-fields (CustomFieldsPage)  
+   • Lists existing custom fields.  
+   • CustomFieldForm component to add new fields.  
+
+6. /admin/users (UserManagementPage)  
+   • List of all users.  
+   • Allows updating user roles via a UserForm or inline editing.  
+
+7. Layout Components  
+   • MainLayout component with a header (e.g., navigation, logout button) and footer.  
+   • Sidebar-like navigation for employees/admins to quickly access admin pages.  
+
+8. Global UI Elements  
+   • Alert / Notification system to display success/error messages.  
+   • Modal component for confirming destructive actions (e.g., deleting a ticket).  
+
+---
+
+**3. Key Middleware Functions**  
+1. Authentication Middleware  
+   • Checks for valid session or JWT tokens on protected routes.  
+   • Attaches user data/roles to the request.  
+
+2. Authorization Middleware  
+   • Inspects the user's role and requested resource.  
+   • Enforces RLS-like logic: customers can access only their tickets, employees/admins see all.  
+
+3. Error Handling Middleware  
+   • Catches and formats exceptions from controllers.  
+   • Returns consistent error messages with appropriate HTTP status codes.  
+
+4. Logging Middleware  
+   • Logs request and response metadata for monitoring and debugging.  
+   • Integrates with a centralized logging system or third-party logging service.  
+
+5. Validation Middleware  
+   • Checks request payloads against schemas for routes like /tickets/:ticketId, /users, and /custom-fields.  
+   • Returns a 400 error if fields are invalid or missing.  
+
+By ensuring each part of the system is clearly defined, you can implement an efficient, secure, and maintainable CRM with Next.js, Supabase, and Postgres.

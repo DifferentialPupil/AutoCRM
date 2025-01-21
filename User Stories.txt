@@ -1,0 +1,17 @@
+**User Stories for Employees:**
+
+As an employee, I need to access customer tickets to provide timely support and resolve issues effectively.
+I need the ability to update ticket statuses to reflect the progress of customer interactions for accurate tracking.
+I need the ability to update ticket priority levels to ensure critical issues are addressed promptly.
+I need the ability to set custom fields in tickets to tailor the CRM to specific business requirements.
+I require access to internal notes to collaborate with my team and ensure continuity in customer service.
+I need to categorize tickets with tags to streamline workflow and implement automation processes.
+I want to view full conversation histories to understand customer interactions and provide informed assistance.
+
+**User Stories for Administrators:**
+
+As an administrator, I need to configure custom fields in tickets to tailor the CRM to specific business requirements.
+I require the ability to set priority levels on tickets to ensure critical issues are addressed promptly.
+I need to manage user roles and permissions to maintain system security and operational efficiency.
+I want to generate reports based on ticket data to gain insights into team performance and customer satisfaction.
+I require the ability to automate workflows to improve efficiency and reduce manual intervention in routine tasks.

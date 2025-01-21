@@ -1,0 +1,11 @@
+# Miscellaneous
+API Keys.txt
+.cursorignore
+.cursorrules
+
+# Node
+node_modules
+
+# Environment
+.env
+.env*
