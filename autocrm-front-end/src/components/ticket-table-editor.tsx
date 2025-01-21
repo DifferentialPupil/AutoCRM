@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Ticket, TicketStatus, InternalNote } from "@/types/schema";
+import { Ticket, TicketStatus } from "@/types/schema";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/lib/supabase";
@@ -25,7 +25,6 @@ export function TicketEditor({ ticket, onStatusChange }: TicketEditorProps) {
   const { 
     notes,
     addNote,
-    setNotes,
     isLoading,
     setLoading,
     error,

@@ -1,7 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { supabase } from '@/lib/supabase';
+import { EmailOtpType, VerifyTokenHashParams } from "@supabase/supabase-js";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -20,8 +19,8 @@ export async function GET(request: Request) {
     // Verify the token
     const { data: { session }, error } = await supabase.auth.verifyOtp({
       token_hash: token,
-      type: type as any
-    });
+      type: type as EmailOtpType
+    } as VerifyTokenHashParams);
     
     if (error) {
       console.error("Auth error:", error.message);

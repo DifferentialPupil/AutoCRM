@@ -130,7 +130,7 @@ function TicketColumn({
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [, setSearchQuery] = useState<string>("");
   const [isCreatingTicket, setIsCreatingTicket] = useState(false);
   const [newTicket, setNewTicket] = useState({
     title: "",

@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   
-  const { setUser, setSession, setLoading, setError, error, isLoading } = useAuthStore();
+  const { setLoading, setError, error, isLoading } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function LoginPage() {
         router.push("/tickets");
       }
     });
-  }, []);
+  }, [router, setLoading]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +36,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const { data: { user, session }, error: signInError } = await supabase.auth.signInWithPassword({
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -59,7 +59,7 @@ export default function LoginPage() {
     setSuccessMessage(null);
 
     try {
-      const { data: { user, session }, error: authError } = await supabase.auth.signUp({
+      const { data: { user }, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
