@@ -5,7 +5,7 @@
 
 2. **Ticket**  
    - Fields: id (PK), title, status (e.g. “open”, “pending”, “resolved”), priority (e.g. “low”, “medium”, “high”), customer_id (FK -> User), created_at, updated_at  
-   - Relationship: Belongs to a User (customer). Has many InternalNotes and TicketComments. Can have many Tags through a junction table.  
+   - Relationship: Belongs to a User (customer). Has many InternalNotes and TicketComments. Can have many Tags through a junction table.
 
 3. **Tag**  
    - Fields: id (PK), name, created_at, updated_at  
