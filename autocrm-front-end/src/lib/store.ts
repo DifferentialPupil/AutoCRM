@@ -1,24 +1,16 @@
 import { create } from 'zustand';
-import { User, Session } from '@supabase/supabase-js';
-import { 
-  Ticket, 
-  Tag, 
-  InternalNote, 
-  CustomField, 
-  TicketComment 
-} from '@/types/schema';
-
-interface AuthState {
-  user: User | null;
-  session: Session | null;
-  isLoading: boolean;
-  error: string | null;
-  setUser: (user: User | null) => void;
-  setSession: (session: Session | null) => void;
-  setLoading: (isLoading: boolean) => void;
-  setError: (error: string | null) => void;
-  signOut: () => void;
-}
+import {
+  AuthState,
+  TicketFilters,
+  TicketStore,
+  UIState,
+  TicketsState,
+  TagsState,
+  NotesStore,
+  CustomFieldsState,
+  CommentsState
+} from '@/types/store';
+import { supabase } from '@/lib/supabase';
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
@@ -32,39 +24,135 @@ export const useAuthStore = create<AuthState>((set) => ({
   signOut: () => set({ user: null, session: null, error: null, isLoading: false }),
 }));
 
-interface TicketFilters {
-  search: string;
-  status: string[];
-  priority: string[];
-}
+export const useTicketStore = create<TicketStore>((set, get) => ({
+  // Initial State
+  tickets: [],
+  selectedTicket: null,
+  isLoading: false,
+  error: null,
 
-interface TicketState {
-  filters: TicketFilters;
-  setFilters: (filters: Partial<TicketFilters>) => void;
-  resetFilters: () => void;
-}
+  // Fetch Actions
+  fetchTickets: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('tickets')
+        .select()
+        .order('created_at', { ascending: false });
 
-const defaultFilters: TicketFilters = {
-  search: '',
-  status: [],
-  priority: [],
-};
+      if (error) throw error;
+      set({ tickets: data });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch tickets' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 
-export const useTicketStore = create<TicketState>((set) => ({
-  filters: defaultFilters,
-  setFilters: (newFilters) => 
-    set((state) => ({ 
-      filters: { ...state.filters, ...newFilters } 
-    })),
-  resetFilters: () => set({ filters: defaultFilters }),
+  fetchTicketById: async (id) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('tickets')
+        .select()
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      set({ selectedTicket: data });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch ticket' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  // Mutations
+  createTicket: async (ticket) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('tickets')
+        .insert(ticket)
+        .select()
+        .single();
+
+      if (error) throw error;
+      // Real-time will handle state update
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to create ticket' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  updateTicket: async (id, updates) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('tickets')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      // Real-time will handle state update
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to update ticket' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  deleteTicket: async (id) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { error } = await supabase
+        .from('tickets')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      // Real-time will handle state update
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to delete ticket' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  // State Updates
+  setSelectedTicket: (ticket) => set({ selectedTicket: ticket }),
+  setLoading: (isLoading) => set({ isLoading }),
+  setError: (error) => set({ error }),
+
+  // Real-time Updates
+  handleTicketCreated: (ticket) => {
+    set((state) => ({
+      tickets: [ticket, ...state.tickets]
+    }));
+  },
+
+  handleTicketUpdated: (ticket) => {
+    set((state) => ({
+      tickets: state.tickets.map(t => t.id === ticket.id ? ticket : t),
+      selectedTicket: state.selectedTicket?.id === ticket.id ? ticket : state.selectedTicket
+    }));
+  },
+
+  handleTicketDeleted: (id) => {
+    set((state) => ({
+      tickets: state.tickets.filter(t => t.id !== id),
+      selectedTicket: state.selectedTicket?.id === id ? null : state.selectedTicket
+    }));
+  }
 }));
-
-interface UIState {
-  sidebarOpen: boolean;
-  theme: 'light' | 'dark' | 'system';
-  setSidebarOpen: (open: boolean) => void;
-  setTheme: (theme: 'light' | 'dark' | 'system') => void;
-}
 
 export const useUIStore = create<UIState>((set) => ({
   sidebarOpen: true,
@@ -72,55 +160,6 @@ export const useUIStore = create<UIState>((set) => ({
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   setTheme: (theme) => set({ theme }),
 }));
-
-interface TicketsState {
-  tickets: Record<number, Ticket>;
-  isLoading: boolean;
-  error: string | null;
-  setTickets: (tickets: Ticket[]) => void;
-  updateTicket: (ticketId: number, updates: Partial<Ticket>) => void;
-  addTicket: (ticket: Ticket) => void;
-  removeTicket: (ticketId: number) => void;
-  setLoading: (isLoading: boolean) => void;
-  setError: (error: string | null) => void;
-}
-
-export const useTicketsStore = create<TicketsState>((set) => ({
-  tickets: {},
-  isLoading: false,
-  error: null,
-  setTickets: (tickets) => set({ 
-    tickets: tickets.reduce((acc, ticket) => ({ ...acc, [ticket.id]: ticket }), {}) 
-  }),
-  updateTicket: (ticketId, updates) => set((state) => ({
-    tickets: {
-      ...state.tickets,
-      [ticketId]: { ...state.tickets[ticketId], ...updates }
-    }
-  })),
-  addTicket: (ticket) => set((state) => ({
-    tickets: { ...state.tickets, [ticket.id]: ticket }
-  })),
-  removeTicket: (ticketId) => set((state) => {
-    const newTickets = { ...state.tickets };
-    delete newTickets[ticketId];
-    return { tickets: newTickets };
-  }),
-  setLoading: (isLoading) => set({ isLoading }),
-  setError: (error) => set({ error }),
-}));
-
-interface TagsState {
-  tags: Record<number, Tag>;
-  isLoading: boolean;
-  error: string | null;
-  setTags: (tags: Tag[]) => void;
-  addTag: (tag: Tag) => void;
-  removeTag: (tagId: number) => void;
-  updateTag: (tagId: number, updates: Partial<Tag>) => void;
-  setLoading: (isLoading: boolean) => void;
-  setError: (error: string | null) => void;
-}
 
 export const useTagsStore = create<TagsState>((set) => ({
   tags: {},
@@ -147,54 +186,136 @@ export const useTagsStore = create<TagsState>((set) => ({
   setError: (error) => set({ error }),
 }));
 
-interface NotesState {
-  notes: Record<number, InternalNote>;
-  isLoading: boolean;
-  error: string | null;
-  setNotes: (notes: InternalNote[]) => void;
-  addNote: (note: InternalNote) => void;
-  removeNote: (noteId: number) => void;
-  updateNote: (noteId: number, updates: Partial<InternalNote>) => void;
-  setLoading: (isLoading: boolean) => void;
-  setError: (error: string | null) => void;
-}
-
-export const useNotesStore = create<NotesState>((set) => ({
-  notes: {},
+export const useNotesStore = create<NotesStore>((set, get) => ({
+  // Initial State
+  notes: [],
+  selectedNote: null,
   isLoading: false,
   error: null,
-  setNotes: (notes) => set({ 
-    notes: notes.reduce((acc, note) => ({ ...acc, [note.id]: note }), {}) 
-  }),
-  addNote: (note) => set((state) => ({
-    notes: { ...state.notes, [note.id]: note }
-  })),
-  removeNote: (noteId) => set((state) => {
-    const newNotes = { ...state.notes };
-    delete newNotes[noteId];
-    return { notes: newNotes };
-  }),
-  updateNote: (noteId, updates) => set((state) => ({
-    notes: {
-      ...state.notes,
-      [noteId]: { ...state.notes[noteId], ...updates }
+
+  // Fetch Actions
+  fetchNotes: async (ticketId) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('internal_notes')
+        .select()
+        .eq('ticket_id', ticketId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      set({ notes: data });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch notes' });
+    } finally {
+      set({ isLoading: false });
     }
-  })),
+  },
+
+  fetchNoteById: async (id) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('internal_notes')
+        .select()
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      set({ selectedNote: data });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch note' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  // Mutations
+  createNote: async (note) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('internal_notes')
+        .insert(note)
+        .select()
+        .single();
+
+      if (error) throw error;
+      // Real-time will handle state update
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to create note' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  updateNote: async (id, updates) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('internal_notes')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      // Real-time will handle state update
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to update note' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  deleteNote: async (id) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { error } = await supabase
+        .from('internal_notes')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      // Real-time will handle state update
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to delete note' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  // State Updates
+  setSelectedNote: (note) => set({ selectedNote: note }),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
-}));
 
-interface CustomFieldsState {
-  fields: Record<number, CustomField>;
-  isLoading: boolean;
-  error: string | null;
-  setFields: (fields: CustomField[]) => void;
-  addField: (field: CustomField) => void;
-  removeField: (fieldId: number) => void;
-  updateField: (fieldId: number, updates: Partial<CustomField>) => void;
-  setLoading: (isLoading: boolean) => void;
-  setError: (error: string | null) => void;
-}
+  // Real-time Updates
+  handleNoteCreated: (note) => {
+    set((state) => ({
+      notes: [note, ...state.notes]
+    }));
+  },
+
+  handleNoteUpdated: (note) => {
+    set((state) => ({
+      notes: state.notes.map(n => n.id === note.id ? note : n),
+      selectedNote: state.selectedNote?.id === note.id ? note : state.selectedNote
+    }));
+  },
+
+  handleNoteDeleted: (id) => {
+    set((state) => ({
+      notes: state.notes.filter(n => n.id !== id),
+      selectedNote: state.selectedNote?.id === id ? null : state.selectedNote
+    }));
+  }
+}));
 
 export const useCustomFieldsStore = create<CustomFieldsState>((set) => ({
   fields: {},
@@ -220,18 +341,6 @@ export const useCustomFieldsStore = create<CustomFieldsState>((set) => ({
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
 }));
-
-interface CommentsState {
-  comments: Record<number, TicketComment>;
-  isLoading: boolean;
-  error: string | null;
-  setComments: (comments: TicketComment[]) => void;
-  addComment: (comment: TicketComment) => void;
-  removeComment: (commentId: number) => void;
-  updateComment: (commentId: number, updates: Partial<TicketComment>) => void;
-  setLoading: (isLoading: boolean) => void;
-  setError: (error: string | null) => void;
-}
 
 export const useCommentsStore = create<CommentsState>((set) => ({
   comments: {},

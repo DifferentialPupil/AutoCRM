@@ -17,7 +17,7 @@ import { TicketEditor } from '@/components/ticket-table-editor';
 import { Ticket, TicketStatus, TicketPriority } from '@/types/schema';
 import { supabase, getErrorMessage } from '@/lib/supabase';
 import { Header } from '@/components/header';
-import { useAuthStore } from '@/lib/store';
+import { useAuthStore, useTicketStore } from '@/lib/store';
 import { 
   Dialog,
   DialogContent,
@@ -74,7 +74,7 @@ function DraggableTicketCard({
         </CardHeader>
         <CardContent>
           <div className="text-sm text-muted-foreground">
-            <p>Customer: {ticket.customer?.email}</p>
+            <p>Customer: {ticket.customer_id}</p>
             <p>Created: {new Date(ticket.created_at).toLocaleDateString()}</p>
           </div>
         </CardContent>
@@ -128,15 +128,14 @@ function TicketColumn({
 }
 
 export default function TicketsPage() {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [, setSearchQuery] = useState<string>("");
+  const { tickets, error, createTicket, updateTicket } = useTicketStore();
+  const { user } = useAuthStore();
+
   const [isCreatingTicket, setIsCreatingTicket] = useState(false);
   const [newTicket, setNewTicket] = useState({
     title: "",
     priority: "low" as TicketPriority
   });
-  const { user } = useAuthStore();
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -152,78 +151,8 @@ export default function TicketsPage() {
     })
   );
 
-  useEffect(() => {
-    fetchTickets();
-  }, []);
-
-  async function fetchTickets() {
-    try {
-      const { data, error } = await supabase
-        .from('tickets')
-        .select(`
-          *,
-          customer:users(email),
-          internal_notes(*, user:users(email))
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setTickets(data);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching tickets:', err);
-      setError(getErrorMessage(err));
-    }
-  }
-
-  const handleSearch = async (query: string) => {
-    setSearchQuery(query);
-    if (!query.trim()) {
-      fetchTickets();
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('tickets')
-        .select(`
-          *,
-          customer:users(email),
-          internal_notes(*, user:users(email))
-        `)
-        .or(`
-          title.ilike.%${query}%,
-          customer.email.ilike.%${query}%
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setTickets(data);
-      setError(null);
-    } catch (err) {
-      console.error('Error searching tickets:', err);
-      setError(getErrorMessage(err));
-    }
-  };
-
   async function handleStatusChange(ticketId: string, newStatus: TicketStatus) {
-    try {
-      const { error } = await supabase
-        .from('tickets')
-        .update({ status: newStatus })
-        .eq('id', ticketId);
-
-      if (error) throw error;
-
-      // Update local state
-      setTickets(tickets.map(t => 
-        t.id === ticketId ? { ...t, status: newStatus } : t
-      ));
-      setError(null);
-    } catch (err) {
-      console.error('Error updating ticket:', err);
-      setError(getErrorMessage(err));
-    }
+    updateTicket(ticketId, { status: newStatus });
   }
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -237,42 +166,22 @@ export default function TicketsPage() {
     const ticket = tickets.find(t => t.id === ticketId);
     if (!ticket || ticket.status === newStatus) return;
 
-    await handleStatusChange(ticketId, newStatus);
+    handleStatusChange(ticketId, newStatus);
   }
 
   const handleCreateTicket = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('tickets')
-        .insert({
-          title: newTicket.title,
-          priority: newTicket.priority,
-          status: 'open',
-          customer_id: user?.id
-        })
-        .select(`
-          *,
-          customer:users(email),
-          internal_notes(*, user:users(email))
-        `)
-        .single();
-
-      if (error) throw error;
-
-      setTickets([data, ...tickets]);
-      setNewTicket({ title: "", priority: "low" });
-      setIsCreatingTicket(false);
-      setError(null);
-    } catch (err) {
-      console.error('Error creating ticket:', err);
-      setError(getErrorMessage(err));
-    }
+    createTicket({
+      title: newTicket.title,
+      priority: newTicket.priority,
+      status: "open",
+      customer_id: user?.id || "",
+    });
+    setIsCreatingTicket(false);
   };
 
   if (error) {
     return (
       <div>
-        <Header title="Tickets" onSearch={handleSearch} />
         <div className="container mx-auto py-10">
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
             Error: {error}
@@ -284,8 +193,7 @@ export default function TicketsPage() {
 
   return (
     <div>
-      <Header title="Tickets" onSearch={handleSearch} />
-      <main className="container mx-auto py-10">
+      <main className="container mx-auto py-5">
         <div className="mb-6 flex justify-between items-center">
           <h1 className="text-3xl font-bold">Tickets</h1>
           <Dialog open={isCreatingTicket} onOpenChange={setIsCreatingTicket}>

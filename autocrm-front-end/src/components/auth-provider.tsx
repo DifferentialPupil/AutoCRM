@@ -3,9 +3,11 @@
 import { useEffect } from 'react';
 import { useAuthStore } from '@/lib/store';
 import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setSession, setLoading } = useAuthStore();
+  const router = useRouter();
 
   useEffect(() => {
     // Check current auth state
@@ -25,7 +27,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => {
+      console.log("Unsubscribing from auth changes");
       subscription.unsubscribe();
+      supabase.auth.signOut();
+      router.push("/login");
+      router.refresh();
     };
   }, [setLoading, setSession, setUser]);
 

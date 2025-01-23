@@ -9,10 +9,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Ticket, TicketStatus } from "@/types/schema";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore, useNotesStore } from "@/lib/store";
+import { InternalNote } from "@/types/schema";
+import { Notes } from "./tickets/notes";
+import { NotesSubscriptionProvider } from "@/providers/notes-subscription";
 
 interface TicketEditorProps {
   ticket: Ticket;
@@ -20,60 +23,33 @@ interface TicketEditorProps {
 }
 
 export function TicketEditor({ ticket, onStatusChange }: TicketEditorProps) {
-  const [newNote, setNewNote] = useState("");
-  const { user } = useAuthStore();
-  const { 
-    notes,
-    addNote,
-    isLoading,
-    setLoading,
-    error,
-    setError
-  } = useNotesStore();
+    const [newNote, setNewNote] = useState("");
+    const [ticketStatus, setTicketStatus] = useState(ticket.status);
+    const { user } = useAuthStore();
+    const { createNote } = useNotesStore();
 
-  // Filter notes for this ticket
-  const ticketNotes = Object.values(notes).filter(note => note.ticket_id === ticket.id);
-
-  async function handleAddNote() {
-    if (!newNote.trim() || !user) {
-      setError("Please enter a note and ensure you're logged in");
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const { data, error: insertError } = await supabase
-        .from('internal_notes')
-        .insert([
-          {
-            ticket_id: ticket.id,
+    async function handleAddNote() {
+        if (!newNote.trim()) return;
+        createNote({
             note_content: newNote,
-            user_id: user.id,
-          }
-        ])
-        .select('*, user:users(email)')
-        .single();
-
-      if (insertError) throw insertError;
-
-      if (!data) {
-        throw new Error('No data returned from insert');
-      }
-
-      addNote(data);
-      setNewNote("");
-    } catch (err) {
-      console.error('Error adding note:', err);
-      setError(err instanceof Error ? err.message : 'Failed to add note');
-    } finally {
-      setLoading(false);
+            ticket_id: ticket.id,
+            user_id: user?.id || ""
+        });
+        setNewNote("");
     }
-  }
+
+    const handleSheetClose = () => {
+        onStatusChange(ticket.id, ticketStatus);
+    }
+
+    const MemoizedNotes = memo(Notes, () => {return true});
 
   return (
-    <Sheet>
+    <Sheet onOpenChange={(open) => {
+        if (!open) {
+          handleSheetClose();
+        }
+    }}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="sm">
           Edit Ticket
@@ -93,8 +69,8 @@ export function TicketEditor({ ticket, onStatusChange }: TicketEditorProps) {
               <h3 className="text-sm font-medium mb-2">Status</h3>
               <select
                 className="w-full rounded-md border p-2"
-                value={ticket.status}
-                onChange={(e) => onStatusChange(ticket.id, e.target.value as TicketStatus)}
+                value={ticketStatus}
+                onChange={(e) => setTicketStatus(e.target.value as TicketStatus)}
               >
                 <option value="open">Open</option>
                 <option value="pending">In Progress</option>
@@ -123,20 +99,18 @@ export function TicketEditor({ ticket, onStatusChange }: TicketEditorProps) {
             <div>
               <h3 className="text-sm font-medium mb-4">Internal Notes</h3>
               <div className="space-y-4">
-                {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">
-                    {error}
-                  </div>
-                )}
                 
-                {ticketNotes.map((note) => (
+                <NotesSubscriptionProvider ticketId={ticket.id}>
+                  <MemoizedNotes />
+                </NotesSubscriptionProvider>
+                {/* {notes.map((note) => (
                   <div key={note.id} className="bg-muted p-3 rounded-md">
                     <p className="text-sm whitespace-pre-wrap">{note.note_content}</p>
                     <p className="text-xs text-muted-foreground mt-2">
                       Added by {note.user?.email} on {new Date(note.created_at).toLocaleString()}
                     </p>
                   </div>
-                ))}
+                ))} */}
 
                 <div className="space-y-2">
                   {user ? (
@@ -148,9 +122,8 @@ export function TicketEditor({ ticket, onStatusChange }: TicketEditorProps) {
                       />
                       <Button 
                         onClick={handleAddNote} 
-                        disabled={isLoading || !newNote.trim()}
                       >
-                        {isLoading ? "Adding..." : "Add Note"}
+                        Add Note
                       </Button>
                     </>
                   ) : (

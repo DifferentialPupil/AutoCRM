@@ -15,20 +15,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   
-  const { setLoading, setError, error, isLoading } = useAuthStore();
+  const { session, setLoading, setError, error, isLoading } = useAuthStore();
   const router = useRouter();
 
-  useEffect(() => {
-    // Reset loading state when component mounts
-    setLoading(false);
-    
-    // Check current auth state
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        router.push("/tickets");
-      }
-    });
-  }, [router, setLoading]);
+    useEffect(() => {
+        if (session) {
+            router.push("/dashboard");
+            router.refresh();
+        }
+    }, [session, router]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +38,7 @@ export default function LoginPage() {
 
       if (signInError) throw signInError;
       
-      router.push("/tickets");
+      router.push("/dashboard");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in');
