@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       router.push("/login");
       router.refresh();
     };
-  }, [setLoading, setSession, setUser]);
+  }, [setLoading, setSession, setUser, router]);
 
   return children;
 } 

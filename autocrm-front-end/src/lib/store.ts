@@ -1,10 +1,8 @@
 import { create } from 'zustand';
 import {
   AuthState,
-  TicketFilters,
   TicketStore,
   UIState,
-  TicketsState,
   TagsState,
   NotesStore,
   CustomFieldsState,
@@ -24,7 +22,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   signOut: () => set({ user: null, session: null, error: null, isLoading: false }),
 }));
 
-export const useTicketStore = create<TicketStore>((set, get) => ({
+export const useTicketStore = create<TicketStore>((set) => ({
   // Initial State
   tickets: [],
   selectedTicket: null,
@@ -74,7 +72,7 @@ export const useTicketStore = create<TicketStore>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('tickets')
         .insert(ticket)
         .select()
@@ -93,7 +91,7 @@ export const useTicketStore = create<TicketStore>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('tickets')
         .update(updates)
         .eq('id', id)
@@ -186,7 +184,7 @@ export const useTagsStore = create<TagsState>((set) => ({
   setError: (error) => set({ error }),
 }));
 
-export const useNotesStore = create<NotesStore>((set, get) => ({
+export const useNotesStore = create<NotesStore>((set) => ({
   // Initial State
   notes: [],
   selectedNote: null,
@@ -237,7 +235,7 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('internal_notes')
         .insert(note)
         .select()
@@ -256,7 +254,7 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('internal_notes')
         .update(updates)
         .eq('id', id)

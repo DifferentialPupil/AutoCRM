@@ -1,14 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useAuthStore, useUIStore } from '@/lib/store';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
-import { Button } from '@/components/ui/button';
 
 export default function SettingsPage() {
   const { user } = useAuthStore();

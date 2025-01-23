@@ -2,7 +2,6 @@
 
 import { InternalNote } from "@/types/schema";
 import { useNotesStore } from "@/lib/store";
-import { Loader2 } from "lucide-react";
 
 export function Notes() {
     const { notes, error } = useNotesStore();

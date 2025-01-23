@@ -9,7 +9,6 @@ import { usePathname } from 'next/navigation';
 import {
   ChevronLeft,
   ChevronRight,
-  LayoutDashboard,
   Ticket,
   Settings,
   Users,

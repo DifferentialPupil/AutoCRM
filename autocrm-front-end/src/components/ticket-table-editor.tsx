@@ -11,9 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Ticket, TicketStatus } from "@/types/schema";
 import { memo, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/lib/supabase";
 import { useAuthStore, useNotesStore } from "@/lib/store";
-import { InternalNote } from "@/types/schema";
 import { Notes } from "./tickets/notes";
 import { NotesSubscriptionProvider } from "@/providers/notes-subscription";
 
