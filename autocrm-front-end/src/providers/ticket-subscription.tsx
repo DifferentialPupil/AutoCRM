@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useTicketStore } from '@/lib/store';
 import { Ticket } from '@/types/schema';
+import { useSearchStore } from '@/lib/store';
 
 export function TicketSubscriptionProvider({ 
   children 
@@ -15,10 +16,18 @@ export function TicketSubscriptionProvider({
     fetchTickets,
     handleTicketCreated,
     handleTicketUpdated,
-    handleTicketDeleted
+    handleTicketDeleted,
+    fetchTicketsBySearch
   } = useTicketStore();
 
+  const { searchQuery } = useSearchStore();
+
   useEffect(() => {
+    if (searchQuery.trim() !== "") {
+      fetchTicketsBySearch(searchQuery);
+      return;
+    }
+    
     // Initial fetch
     fetchTickets();
 
@@ -52,7 +61,7 @@ export function TicketSubscriptionProvider({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchTickets, handleTicketCreated, handleTicketUpdated, handleTicketDeleted]);
+  }, [fetchTickets, handleTicketCreated, handleTicketUpdated, handleTicketDeleted, searchQuery]);
 
   return children;
 }

@@ -6,7 +6,8 @@ import {
   TagsState,
   NotesStore,
   CustomFieldsState,
-  CommentsState
+  CommentsState,
+  SearchState
 } from '@/types/store';
 import { supabase } from '@/lib/supabase';
 
@@ -65,6 +66,25 @@ export const useTicketStore = create<TicketStore>((set) => ({
     } finally {
       set({ isLoading: false });
     }
+  },
+
+  fetchTicketsBySearch: async (searchQuery) => {
+    try {
+        set({ isLoading: true, error: null });
+        
+        const { data, error } = await supabase
+          .from('tickets')
+          .select()
+          .textSearch('title', searchQuery, { type: 'websearch' })
+          .order('created_at', { ascending: false });
+  
+        if (error) throw error;
+        set({ tickets: data });
+      } catch (err) {
+        set({ error: err instanceof Error ? err.message : 'Failed to fetch tickets' });
+      } finally {
+        set({ isLoading: false });
+      }
   },
 
   // Mutations
@@ -363,4 +383,9 @@ export const useCommentsStore = create<CommentsState>((set) => ({
   })),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
-})); 
+}));
+
+export const useSearchStore = create<SearchState>((set) => ({
+  searchQuery: '',
+  setSearchQuery: (query: string) => set({ searchQuery: query }),
+}));

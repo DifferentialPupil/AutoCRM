@@ -19,35 +19,11 @@ export interface AuthState {
   signOut: () => void;
 }
 
-export interface TicketFilters {
-  search: string;
-  status: string[];
-  priority: string[];
-}
-
-export interface TicketState {
-  filters: TicketFilters;
-  setFilters: (filters: Partial<TicketFilters>) => void;
-  resetFilters: () => void;
-}
-
 export interface UIState {
   sidebarOpen: boolean;
   theme: 'light' | 'dark' | 'system';
   setSidebarOpen: (open: boolean) => void;
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
-}
-
-export interface TicketsState {
-  tickets: Record<number, Ticket>;
-  isLoading: boolean;
-  error: string | null;
-  setTickets: (tickets: Ticket[]) => void;
-  updateTicket: (ticketId: number, updates: Partial<Ticket>) => void;
-  addTicket: (ticket: Ticket) => void;
-  removeTicket: (ticketId: number) => void;
-  setLoading: (isLoading: boolean) => void;
-  setError: (error: string | null) => void;
 }
 
 export interface TagsState {
@@ -127,6 +103,7 @@ export interface TicketStore {
   // Fetch Actions
   fetchTickets: () => Promise<void>;
   fetchTicketById: (id: string) => Promise<void>;
+  fetchTicketsBySearch: (searchQuery: string) => Promise<void>;
   
   // Mutations
   createTicket: (ticket: Omit<Ticket, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
@@ -142,4 +119,9 @@ export interface TicketStore {
   handleTicketCreated: (ticket: Ticket) => void;
   handleTicketUpdated: (ticket: Ticket) => void;
   handleTicketDeleted: (id: string) => void;
+}
+
+export interface SearchState {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
 }

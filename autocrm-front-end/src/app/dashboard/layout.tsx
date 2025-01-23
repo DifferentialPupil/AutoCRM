@@ -26,7 +26,7 @@ export default function DashboardLayout({
     <div className="h-screen flex">
       <Sidebar />
       <main className="flex-1 overflow-y-auto">
-        <Header title="" onSearch={() => {}} />
+        <Header/>
         {children}
       </main>
     </div>
