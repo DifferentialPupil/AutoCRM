@@ -83,4 +83,16 @@ export interface TicketTag {
   id: string; // UUID
   ticket_id: string; // UUID
   tag_id: string; // UUID
+}
+
+export interface AuditLog {
+  id: string; // UUID
+  table_name: string;
+  operation: string;
+  old_data: Record<string, any> | null;
+  new_data: Record<string, any> | null;
+  changed_at: string;
+  changed_by: string | null; // UUID
+  // Relations
+  user?: User;
 } 

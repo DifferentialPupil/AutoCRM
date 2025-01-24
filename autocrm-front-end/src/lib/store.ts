@@ -7,7 +7,8 @@ import {
   NotesStore,
   CustomFieldsState,
   CommentsState,
-  SearchState
+  SearchState,
+  AuditStore
 } from '@/types/store';
 import { supabase } from '@/lib/supabase';
 
@@ -388,4 +389,139 @@ export const useCommentsStore = create<CommentsState>((set) => ({
 export const useSearchStore = create<SearchState>((set) => ({
   searchQuery: '',
   setSearchQuery: (query: string) => set({ searchQuery: query }),
+}));
+
+export const useAuditStore = create<AuditStore>((set, get) => ({
+  // Initial State
+  auditLogs: [],
+  isLoading: false,
+  error: null,
+
+  // Fetch Actions
+  fetchAuditLogs: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .select('*, user:users(email)')
+        .order('changed_at', { ascending: false });
+
+      if (error) throw error;
+      set({ auditLogs: data });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch audit logs' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchAuditLogsByTable: async (tableName: string) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .select('*, user:users(email)')
+        .eq('table_name', tableName)
+        .order('changed_at', { ascending: false });
+
+      if (error) throw error;
+      set({ auditLogs: data });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch audit logs' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchAuditLogsByUser: async (userId: string) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .select('*, user:users(email)')
+        .eq('changed_by', userId)
+        .order('changed_at', { ascending: false });
+
+      if (error) throw error;
+      set({ auditLogs: data });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch audit logs' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchAuditLogsBySearch: async (searchQuery: string) => {
+    try {
+      set({ isLoading: true, error: null });
+      // Implement search logic here
+      const { data, error } = await supabase
+          .from('audit_logs')
+          .select()
+          .textSearch('operation', searchQuery, { type: 'websearch' })
+          .order('changed_at', { ascending: false });
+
+      if (error) throw error;
+      set({ auditLogs: data });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch audit logs' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  // State Updates
+  setLoading: (isLoading) => set({ isLoading }),
+  setError: (error) => set({ error }),
+
+  // Real-time Updates
+  handleAuditLogCreated: (log) => {
+    set((state) => ({
+      auditLogs: [log, ...state.auditLogs]
+    }));
+  },
+
+  // Analytics
+  getOperationCounts: () => {
+    const { auditLogs } = get();
+    return auditLogs.reduce((acc, log) => {
+      acc[log.operation] = (acc[log.operation] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+  },
+
+  getTableActivityCounts: () => {
+    const { auditLogs } = get();
+    return auditLogs.reduce((acc, log) => {
+      acc[log.table_name] = (acc[log.table_name] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+  },
+
+  getUserActivityCounts: () => {
+    const { auditLogs } = get();
+    return auditLogs.reduce((acc, log) => {
+      if (log.changed_by) {
+        acc[log.changed_by] = (acc[log.changed_by] || 0) + 1;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+  },
+
+  getActivityTimeline: () => {
+    const { auditLogs } = get();
+    const timeline: Record<string, number> = {};
+    
+    auditLogs.forEach(log => {
+      const date = new Date(log.changed_at).toISOString().split('T')[0];
+      timeline[date] = (timeline[date] || 0) + 1;
+    });
+
+    return Object.entries(timeline)
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  },
 }));

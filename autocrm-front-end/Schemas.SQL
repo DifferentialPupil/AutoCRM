@@ -136,6 +136,18 @@ CREATE TABLE IF NOT EXISTS ticket_comments (
     ON UPDATE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS public.audit_logs (
+  id               UUID NOT NULL DEFAULT gen_random_uuid(),
+  table_name       TEXT NOT NULL,
+  operation        TEXT NOT NULL,
+  old_data         JSONB NULL,
+  new_data         JSONB NULL,
+  changed_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  changed_by       UUID NULL,
+  CONSTRAINT audit_logs_pkey PRIMARY KEY (id),
+  CONSTRAINT audit_logs_changed_by_fkey FOREIGN KEY (changed_by) REFERENCES public.users(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+);
+
 -- Optional: Enable RLS on tables (you must then create policies in Supabase to enforce row-level security)
 -- ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE tickets ENABLE ROW LEVEL SECURITY;

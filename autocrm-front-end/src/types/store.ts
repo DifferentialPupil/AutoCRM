@@ -4,7 +4,8 @@ import {
   Tag, 
   InternalNote, 
   CustomField, 
-  TicketComment 
+  TicketComment,
+  AuditLog
 } from './schema';
 
 export interface AuthState {
@@ -124,4 +125,32 @@ export interface TicketStore {
 export interface SearchState {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+}
+
+export interface AuditStore {
+  // Data
+  auditLogs: AuditLog[];
+  
+  // UI States
+  isLoading: boolean;
+  error: string | null;
+  
+  // Fetch Actions
+  fetchAuditLogs: () => Promise<void>;
+  fetchAuditLogsByTable: (tableName: string) => Promise<void>;
+  fetchAuditLogsByUser: (userId: string) => Promise<void>;
+  fetchAuditLogsBySearch: (searchQuery: string) => Promise<void>;
+  
+  // State Updates
+  setLoading: (isLoading: boolean) => void;
+  setError: (error: string | null) => void;
+  
+  // Real-time Updates
+  handleAuditLogCreated: (log: AuditLog) => void;
+  
+  // Analytics
+  getOperationCounts: () => Record<string, number>;
+  getTableActivityCounts: () => Record<string, number>;
+  getUserActivityCounts: () => Record<string, number>;
+  getActivityTimeline: () => { date: string; count: number }[];
 }

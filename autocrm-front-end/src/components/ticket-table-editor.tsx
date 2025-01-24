@@ -89,7 +89,7 @@ export function TicketEditor({ ticket, onStatusChange }: TicketEditorProps) {
 
             <div>
               <h3 className="text-sm font-medium mb-2">Customer</h3>
-              <p className="text-sm text-muted-foreground">{ticket.customer?.email}</p>
+              <p className="text-sm text-muted-foreground">{ticket.customer_id}</p>
             </div>
 
             <Separator />
@@ -101,14 +101,6 @@ export function TicketEditor({ ticket, onStatusChange }: TicketEditorProps) {
                 <NotesSubscriptionProvider ticketId={ticket.id}>
                   <MemoizedNotes />
                 </NotesSubscriptionProvider>
-                {/* {notes.map((note) => (
-                  <div key={note.id} className="bg-muted p-3 rounded-md">
-                    <p className="text-sm whitespace-pre-wrap">{note.note_content}</p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Added by {note.user?.email} on {new Date(note.created_at).toLocaleString()}
-                    </p>
-                  </div>
-                ))} */}
 
                 <div className="space-y-2">
                   {user ? (

@@ -45,7 +45,6 @@ export function Header() {
         }
         return;
     }
-    console.log("search", query);
     setSearchQuery(query);
   };
 

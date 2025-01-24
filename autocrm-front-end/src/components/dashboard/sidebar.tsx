@@ -12,7 +12,9 @@ import {
   Ticket,
   Settings,
   Users,
-  MessageSquare
+  MessageSquare,
+  LineChart,
+  History
 } from 'lucide-react';
 
 const navigationItems = [
@@ -33,6 +35,18 @@ const navigationItems = [
     href: '/dashboard/messages',
     icon: MessageSquare,
     description: 'Communication center'
+  },
+  {
+    title: 'Performance',
+    href: '/dashboard/performance',
+    icon: LineChart,
+    description: 'Performance analytics and tools'
+  },
+  {
+    title: 'Audit',
+    href: '/dashboard/audit',
+    icon: History,
+    description: 'System audit logs'
   },
   {
     title: 'Settings',
