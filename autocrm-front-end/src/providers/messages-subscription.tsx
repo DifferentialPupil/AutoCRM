@@ -87,7 +87,6 @@ export function MessagesSubscriptionProvider({ children }: MessagesSubscriptionP
     };
   }, [
     user,
-    directMessages,
     selectedDirectMessage,
     handleMessageCreated,
     handleMessageUpdated,

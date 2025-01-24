@@ -36,8 +36,9 @@ export function DirectMessageSubscriptionProvider({ children }: DirectMessageSub
           table: 'direct_messages',
           filter: `sender_id=eq.${user.id}`
         },
-        ({ new: newDM }) => {
-          handleDirectMessageCreated(newDM as DirectMessage);
+        (payload) => {
+            console.log("newDM", payload.new);
+          handleDirectMessageCreated(payload.new as DirectMessage);
         }
       )
       .on(
@@ -48,11 +49,16 @@ export function DirectMessageSubscriptionProvider({ children }: DirectMessageSub
           table: 'direct_messages',
           filter: `recipient_id=eq.${user.id}`
         },
-        ({ new: newDM }) => {
-          handleDirectMessageCreated(newDM as DirectMessage);
+        (payload) => {
+            console.log("newDM", payload.new);
+          handleDirectMessageCreated(payload.new as DirectMessage);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Subscribed to direct message changes');
+        }
+      });
 
     return () => {
       console.log('Unsubscribing from direct message changes');
@@ -60,7 +66,6 @@ export function DirectMessageSubscriptionProvider({ children }: DirectMessageSub
       supabase.removeChannel(channel);
     };
   }, [
-    user,
     fetchDirectMessagesByUser,
     handleDirectMessageCreated,
     handleDirectMessageUpdated,
