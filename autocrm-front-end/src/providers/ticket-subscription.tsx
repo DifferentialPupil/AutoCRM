@@ -32,6 +32,7 @@ export function TicketSubscriptionProvider({
     fetchTickets();
 
     // Subscribe to changes
+    console.log("Subscribing to ticket changes");
     const channel = supabase
       .channel('table-db-changes')
       .on(
@@ -59,9 +60,17 @@ export function TicketSubscriptionProvider({
       .subscribe();
 
     return () => {
+      console.log("Unsubscribing from ticket changes");
       supabase.removeChannel(channel);
     };
-  }, [fetchTickets, handleTicketCreated, handleTicketUpdated, handleTicketDeleted, searchQuery, fetchTicketsBySearch]);
+  }, [
+    fetchTickets,
+    handleTicketCreated,
+    handleTicketUpdated,
+    handleTicketDeleted,
+    searchQuery,
+    fetchTicketsBySearch
+  ]);
 
   return children;
 }

@@ -24,8 +24,6 @@ export function NotesInput({ handleAddNote }: NotesInputProps) {
             if (match && match.index !== undefined) {
                 const start = match.index;
                 const end = start + match[0].length;
-                
-                // Set selection range to highlight the matched text
                 e.currentTarget.setSelectionRange(start, end);
             }
         }
