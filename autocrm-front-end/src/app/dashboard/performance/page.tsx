@@ -1,7 +1,6 @@
 'use client';
 
 import { useAuditStore } from "@/lib/store";
-import { useEffect } from "react";
 import {
   Table,
   TableBody,

@@ -41,7 +41,7 @@ export function AuditSubscriptionProvider({ children }: AuditSubscriptionProvide
         console.log('Unsubscribing from audit logs');
         supabase.removeChannel(channel);
     };
-  }, [handleAuditLogCreated, searchQuery]);
+  }, [handleAuditLogCreated, searchQuery, fetchAuditLogs, fetchAuditLogsBySearch]);
 
   return <>{children}</>;
 } 

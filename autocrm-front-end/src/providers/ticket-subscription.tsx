@@ -61,7 +61,7 @@ export function TicketSubscriptionProvider({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchTickets, handleTicketCreated, handleTicketUpdated, handleTicketDeleted, searchQuery]);
+  }, [fetchTickets, handleTicketCreated, handleTicketUpdated, handleTicketDeleted, searchQuery, fetchTicketsBySearch]);
 
   return children;
 }
