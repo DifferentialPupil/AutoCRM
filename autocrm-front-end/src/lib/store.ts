@@ -8,7 +8,8 @@ import {
   CustomFieldsState,
   CommentsState,
   SearchState,
-  AuditStore
+  AuditStore,
+  DirectMessageStore
 } from '@/types/store';
 import { supabase } from '@/lib/supabase';
 
@@ -524,4 +525,34 @@ export const useAuditStore = create<AuditStore>((set, get) => ({
       .map(([date, count]) => ({ date, count }))
       .sort((a, b) => a.date.localeCompare(b.date));
   },
+}));
+
+export const useDirectMessageStore = create<DirectMessageStore>((set) => ({
+  // Initial State
+  directMessage: null,
+  messages: [],
+  isLoading: false,
+  error: null,
+
+  // Fetch Actions
+  fetchDirectMessage: async () => {
+    
+  },
+
+  fetchMessages: async () => {
+
+  },
+  
+  // State Updates
+  setLoading: (isLoading) => set({ isLoading }),
+  setError: (error) => set({ error }),
+
+  // Real-time Updates:
+  handleMessageReceived: (message) => {
+    console.log(message);
+  },
+
+  sendMessage: (content) => {
+    console.log(content);
+  }
 }));

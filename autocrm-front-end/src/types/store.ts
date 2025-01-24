@@ -5,7 +5,9 @@ import {
   InternalNote, 
   CustomField, 
   TicketComment,
-  AuditLog
+  AuditLog,
+  DirectMessage,
+  Message
 } from './schema';
 
 export interface AuthState {
@@ -153,4 +155,26 @@ export interface AuditStore {
   getTableActivityCounts: () => Record<string, number>;
   getUserActivityCounts: () => Record<string, number>;
   getActivityTimeline: () => { date: string; count: number }[];
+}
+
+export interface DirectMessageStore {
+  // Data
+  directMessage: DirectMessage | null;
+  messages: Message[];
+
+  // UI States
+  isLoading: boolean;
+  error: string | null;
+
+  // Fetch Actions
+  fetchDirectMessage: () => Promise<void>;
+  fetchMessages: () => Promise<void>;
+  
+  // State Updates
+  setLoading: (isLoading: boolean) => void;
+  setError: (error: string | null) => void;
+
+  // Real-time Updates:
+  handleMessageReceived: (message: Message) => void;
+  sendMessage: (content: string) => void;
 }

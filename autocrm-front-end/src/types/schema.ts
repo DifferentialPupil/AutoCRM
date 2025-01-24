@@ -89,10 +89,42 @@ export interface AuditLog {
   id: string; // UUID
   table_name: string;
   operation: string;
-  old_data: Record<string, any> | null;
-  new_data: Record<string, any> | null;
+  old_data: Record<string, string> | null;
+  new_data: Record<string, string> | null;
   changed_at: string;
   changed_by: string | null; // UUID
   // Relations
   user?: User;
-} 
+}
+
+export interface DirectMessage {
+  id: string; // UUID
+  created_at: string;
+  sender_id: string; // UUID
+  recipient_id: string; // UUID
+  // Relations
+  sender?: User;
+  reciever?: User;
+}
+
+export interface Channel {
+  id: string; // UUID
+  created_at: string;
+  name: string;
+  user_id: string;
+  // Relations
+  user?: User;
+}
+
+export interface Message {
+  id: string; // UUID
+  created_at: string;
+  sender_id: string; // UUID
+  channel_id: string | null; // UUID
+  direct_message_id: string | null; // UUID
+  content: string;
+  // Relations
+  sender?: User;
+  direct_message?: DirectMessage;
+  channel?: Channel;
+}
