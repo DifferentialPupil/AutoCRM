@@ -13,7 +13,7 @@ import {
   useDraggable
 } from '@dnd-kit/core';
 import { useState } from 'react';
-import { TicketEditor } from '@/components/ticket-table-editor';
+import { TicketEditor } from '@/components/tickets/ticket-table-editor';
 import { Ticket, TicketStatus, TicketPriority } from '@/types/schema';
 import { useAuthStore, useTicketStore } from '@/lib/store';
 import { 

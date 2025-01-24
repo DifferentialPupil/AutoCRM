@@ -12,8 +12,9 @@ import { Ticket, TicketStatus } from "@/types/schema";
 import { memo, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuthStore, useNotesStore } from "@/lib/store";
-import { Notes } from "./tickets/notes";
+import { Notes } from "@/components/tickets/notes";
 import { NotesSubscriptionProvider } from "@/providers/notes-subscription";
+import { NotesInput } from "@/components/tickets/notes-input";
 
 interface TicketEditorProps {
   ticket: Ticket;
@@ -21,19 +22,17 @@ interface TicketEditorProps {
 }
 
 export function TicketEditor({ ticket, onStatusChange }: TicketEditorProps) {
-    const [newNote, setNewNote] = useState("");
     const [ticketStatus, setTicketStatus] = useState(ticket.status);
     const { user } = useAuthStore();
     const { createNote } = useNotesStore();
 
-    async function handleAddNote() {
+    async function handleAddNote(newNote: string) {
         if (!newNote.trim()) return;
         createNote({
             note_content: newNote,
             ticket_id: ticket.id,
             user_id: user?.id || ""
         });
-        setNewNote("");
     }
 
     const handleSheetClose = () => {
@@ -103,24 +102,7 @@ export function TicketEditor({ ticket, onStatusChange }: TicketEditorProps) {
                 </NotesSubscriptionProvider>
 
                 <div className="space-y-2">
-                  {user ? (
-                    <>
-                      <Textarea
-                        placeholder="Add a note..."
-                        value={newNote}
-                        onChange={(e) => setNewNote(e.target.value)}
-                      />
-                      <Button 
-                        onClick={handleAddNote} 
-                      >
-                        Add Note
-                      </Button>
-                    </>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      Please sign in to add notes.
-                    </p>
-                  )}
+                  <NotesInput handleAddNote={handleAddNote} />
                 </div>
               </div>
             </div>
