@@ -10,7 +10,7 @@ interface MessagesSubscriptionProviderProps {
 }
 
 export function MessagesSubscriptionProvider({ children }: MessagesSubscriptionProviderProps) {
-  const { directMessages } = useDirectMessageStore();
+  const { directMessages, selectedDirectMessage } = useDirectMessageStore();
   const { 
     handleMessageCreated,
     handleMessageUpdated,
@@ -36,7 +36,7 @@ export function MessagesSubscriptionProvider({ children }: MessagesSubscriptionP
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: directMessages.map(dm => `direct_message_id=eq.${dm.id}`).join(',')
+          filter: `direct_message_id=eq.${selectedDirectMessage?.id}`
         },
         (payload) => {
           const newMessage = payload.new as Message;
@@ -51,7 +51,7 @@ export function MessagesSubscriptionProvider({ children }: MessagesSubscriptionP
           event: 'UPDATE',
           schema: 'public',
           table: 'messages',
-          filter: directMessages.map(dm => `direct_message_id=eq.${dm.id}`).join(',')
+          filter: `direct_message_id=eq.${selectedDirectMessage?.id}`
         },
         (payload) => {
           const updatedMessage = payload.new as Message;
@@ -66,7 +66,7 @@ export function MessagesSubscriptionProvider({ children }: MessagesSubscriptionP
           event: 'DELETE',
           schema: 'public',
           table: 'messages',
-          filter: directMessages.map(dm => `direct_message_id=eq.${dm.id}`).join(',')
+          filter: `direct_message_id=eq.${selectedDirectMessage?.id}`
         },
         (payload) => {
           const deletedMessage = payload.old as Message;
@@ -88,6 +88,7 @@ export function MessagesSubscriptionProvider({ children }: MessagesSubscriptionP
   }, [
     user,
     directMessages,
+    selectedDirectMessage,
     handleMessageCreated,
     handleMessageUpdated,
     handleMessageDeleted,

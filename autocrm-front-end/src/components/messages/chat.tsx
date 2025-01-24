@@ -13,17 +13,13 @@ export default function Chat() {
   const [newMessage, setNewMessage] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const { selectedDirectMessage } = useDirectMessageStore();
-  const { messages, createMessage, isLoading, error } = useMessagesStore();
+  const { messages, createMessage, error } = useMessagesStore();
   const { user } = useAuthStore();
 
   // Get messages for the selected conversation
   const conversationMessages = useMemo(() => selectedDirectMessage 
     ? messages[selectedDirectMessage.id] || []
     : [], [messages, selectedDirectMessage]);
-
-  const conversationLoading = selectedDirectMessage 
-    ? isLoading[selectedDirectMessage.id] || false
-    : false;
 
   const conversationError = selectedDirectMessage 
     ? error[selectedDirectMessage.id] || null
@@ -80,9 +76,6 @@ export default function Chat() {
           </Avatar>
           <div>
             <h3 className="font-semibold">{contact?.email}</h3>
-            {conversationLoading && (
-              <p className="text-sm text-muted-foreground">Loading messages...</p>
-            )}
           </div>
         </div>
       </div>
@@ -146,7 +139,7 @@ export default function Chat() {
           <Button 
             type="submit" 
             size="icon"
-            disabled={!newMessage.trim() || conversationLoading}
+            disabled={!newMessage.trim()}
           >
             <Send className="h-4 w-4" />
           </Button>

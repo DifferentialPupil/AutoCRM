@@ -10,9 +10,153 @@ import {
   SearchState,
   AuditStore,
   DirectMessageStore,
-  MessagesStore
+  MessagesStore,
+  UsersStore
 } from '@/types/store';
 import { supabase } from '@/lib/supabase';
+
+export const useUsersStore = create<UsersStore>((set) => ({
+  // Initial State
+  users: [],
+  selectedUser: null,
+  isLoading: false,
+  error: null,
+
+  // Fetch Actions
+  fetchUsers: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('users')
+        .select()
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      set({ users: data });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch users' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchUserById: async (id) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('users')
+        .select()
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      set({ selectedUser: data });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch user' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchUsersByRole: async (role) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('users')
+        .select()
+        .eq('role', role)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      set({ users: data });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch users' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchUsersBySearch: async (searchQuery) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('users')
+        .select()
+        .textSearch('email', searchQuery, { type: 'websearch' })
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      set({ users: data });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch users' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  // Mutations
+  updateUser: async (id, updates) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { error } = await supabase
+        .from('users')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      // Real-time will handle state update
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to update user' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  deleteUser: async (id) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { error } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      // Real-time will handle state update
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to delete user' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  // State Updates
+  setSelectedUser: (user) => set({ selectedUser: user }),
+  setLoading: (isLoading) => set({ isLoading }),
+  setError: (error) => set({ error }),
+
+  // Real-time Updates
+  handleUserUpdated: (user) => {
+    set((state) => ({
+      users: state.users.map(u => u.id === user.id ? user : u),
+      selectedUser: state.selectedUser?.id === user.id ? user : state.selectedUser
+    }));
+  },
+
+  handleUserDeleted: (id) => {
+    set((state) => ({
+      users: state.users.filter(u => u.id !== id),
+      selectedUser: state.selectedUser?.id === id ? null : state.selectedUser
+    }));
+  }
+}));
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
@@ -545,8 +689,7 @@ export const useDirectMessageStore = create<DirectMessageStore>((set) => ({
         .select(`
           *,
           sender:sender_id(id, email),
-          recipient:recipient_id(id, email),
-          messages(*)
+          recipient:recipient_id(id, email)
         `)
         .order('created_at', { ascending: false });
 
@@ -562,14 +705,12 @@ export const useDirectMessageStore = create<DirectMessageStore>((set) => ({
   fetchDirectMessageById: async (id) => {
     try {
       set({ isLoading: true, error: null });
-      
       const { data, error } = await supabase
         .from('direct_messages')
         .select(`
           *,
           sender:sender_id(id, email),
-          recipient:recipient_id(id, email),
-          messages(*)
+          recipient:recipient_id(id, email)
         `)
         .eq('id', id)
         .single();
@@ -592,8 +733,7 @@ export const useDirectMessageStore = create<DirectMessageStore>((set) => ({
         .select(`
           *,
           sender:sender_id(id, email),
-          recipient:recipient_id(id, email),
-          messages(*)
+          recipient:recipient_id(id, email)
         `)
         .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
         .order('created_at', { ascending: false });
@@ -671,9 +811,21 @@ export const useDirectMessageStore = create<DirectMessageStore>((set) => ({
   setError: (error) => set({ error }),
 
   // Real-time Updates
-  handleDirectMessageCreated: (directMessage) => {
+  handleDirectMessageCreated: async (directMessage) => {
+    const { data, error } = await supabase
+        .from('direct_messages')
+        .select(`
+          *,
+          sender:sender_id(id, email),
+          recipient:recipient_id(id, email)
+        `)
+        .eq('id', directMessage.id)
+        .single();
+
+    if (error) throw error;
+
     set((state) => ({
-      directMessages: [directMessage, ...state.directMessages]
+      directMessages: [{...directMessage, sender: data.sender, recipient: data.recipient}, ...state.directMessages]
     }));
   },
 

@@ -7,8 +7,38 @@ import {
   TicketComment,
   AuditLog,
   DirectMessage,
-  Message
+  Message,
+  User as AppUser
 } from './schema';
+
+export interface UsersStore {
+  // Data
+  users: AppUser[];
+  selectedUser: AppUser | null;
+  
+  // UI States
+  isLoading: boolean;
+  error: string | null;
+  
+  // Fetch Actions
+  fetchUsers: () => Promise<void>;
+  fetchUserById: (id: string) => Promise<void>;
+  fetchUsersByRole: (role: AppUser['role']) => Promise<void>;
+  fetchUsersBySearch: (searchQuery: string) => Promise<void>;
+  
+  // Mutations
+  updateUser: (id: string, updates: Partial<AppUser>) => Promise<void>;
+  deleteUser: (id: string) => Promise<void>;
+  
+  // State Updates
+  setSelectedUser: (user: AppUser | null) => void;
+  setLoading: (isLoading: boolean) => void;
+  setError: (error: string | null) => void;
+  
+  // Real-time Updates
+  handleUserUpdated: (user: AppUser) => void;
+  handleUserDeleted: (id: string) => void;
+}
 
 export interface AuthState {
   user: User | null;

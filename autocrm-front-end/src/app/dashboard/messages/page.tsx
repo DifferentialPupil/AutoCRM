@@ -4,14 +4,17 @@ import { useEffect } from 'react';
 import { useDirectMessageStore, useAuthStore, useMessagesStore } from '@/lib/store';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-
+import Users from '@/components/messages/users';
+import { User as AppUser } from '@/types/schema';
 import Chat from '@/components/messages/chat';
 
 export default function MessagesPage() {
   const { user } = useAuthStore();
   const { 
     directMessages,
+    selectedDirectMessage,
     fetchDirectMessagesByUser,
+    createDirectMessage,
     setSelectedDirectMessage,
     error 
   } = useDirectMessageStore();
@@ -60,12 +63,24 @@ export default function MessagesPage() {
     );
   }
 
+  const handleUserSelect = (selectedUser: AppUser) => {
+    createDirectMessage({
+      sender_id: user?.id || '',
+      recipient_id: selectedUser.id,
+    });
+  };
+
   return (
     <div className="h-[calc(100vh-4rem)] flex">
       {/* Contacts List */}
       <div className="w-80 border-r bg-muted/30">
         <div className="p-4">
-          <h2 className="text-lg font-semibold mb-4">Messages</h2>
+          <h2 className="text-lg font-semibold mb-4">
+            Messages
+            <div className="float-right">
+              <Users onSelect={handleUserSelect}/>
+            </div>
+          </h2>
           <div className="space-y-2">
             {directMessages.map((dm) => {
               const contact = dm.sender_id === user?.id ? dm.recipient : dm.sender;
@@ -74,6 +89,9 @@ export default function MessagesPage() {
                   key={dm.id}
                   className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent cursor-pointer"
                   onClick={() => setSelectedDirectMessage(dm)}
+                  style={{
+                    backgroundColor: selectedDirectMessage?.id === dm.id ? 'lightblue' : 'transparent'
+                  }}
                 >
                   <Avatar>
                     <AvatarFallback>
