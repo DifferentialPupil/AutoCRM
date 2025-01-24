@@ -8,7 +8,8 @@ import {
   AuditLog,
   DirectMessage,
   Message,
-  User as AppUser
+  User as AppUser,
+  Template
 } from './schema';
 
 export interface UsersStore {
@@ -244,4 +245,34 @@ export interface MessagesStore {
   
   // Cleanup
   // clearMessages: (directMessageId: string) => void;
+}
+
+export interface TemplateStore {
+  // Data
+  templates: Template[];
+
+  // UI States
+  isLoading: boolean;
+  error: string | null;
+
+  // Fetch Actions
+  fetchTemplates: () => Promise<void>;
+  fetchTemplateById: (id: string) => Promise<void>;
+  fetchTemplatesByUser: (userId: string) => Promise<void>;
+  fetchTemplatesBySearch: (searchQuery: string) => Promise<void>;
+
+  // Mutations
+  createTemplate: (template: Omit<Template, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  updateTemplate: (id: string, updates: Partial<Template>) => Promise<void>;
+  deleteTemplate: (id: string) => Promise<void>;
+
+  // State Updates
+  setTemplates: (templates: Template[]) => void;
+  setLoading: (isLoading: boolean) => void;
+  setError: (error: string | null) => void;
+
+  // Real-time Updates
+  handleTemplateCreated: (template: Template) => void;
+  handleTemplateUpdated: (template: Template) => void;
+  handleTemplateDeleted: (id: string) => void;
 }

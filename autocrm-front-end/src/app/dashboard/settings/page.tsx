@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { TemplateModal } from '@/components/settings/templates';
 
 export default function SettingsPage() {
   const { user } = useAuthStore();
@@ -180,6 +181,112 @@ export default function SettingsPage() {
                   <Label>Due Date</Label>
                 </div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Macros Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Macros Settings</CardTitle>
+            <CardDescription>Configure how macros behave and are displayed</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="defaultMacroCategory">Default Macro Category</Label>
+              <Select defaultValue="tickets">
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tickets">Ticket Macros</SelectItem>
+                  <SelectItem value="customer">Customer Macros</SelectItem>
+                  <SelectItem value="workflow">Workflow Macros</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Quick Apply Macros</Label>
+                <p className="text-sm text-muted-foreground">Show macro suggestions based on ticket context</p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Macro Keyboard Shortcuts</Label>
+                <p className="text-sm text-muted-foreground">Enable keyboard shortcuts for frequently used macros</p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Share Macros</Label>
+                <p className="text-sm text-muted-foreground">Allow team members to use your custom macros</p>
+              </div>
+              <Switch />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Macro History</Label>
+                <p className="text-sm text-muted-foreground">Keep track of applied macros in ticket history</p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Template Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Template Settings</CardTitle>
+            <CardDescription>Configure your response templates preferences</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="defaultTemplate">Default Template Category</Label>
+              <Select defaultValue="support">
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="support">Support Responses</SelectItem>
+                  <SelectItem value="sales">Sales Responses</SelectItem>
+                  <SelectItem value="general">General Responses</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Auto-suggest Templates</Label>
+                <p className="text-sm text-muted-foreground">Suggest relevant templates while typing responses</p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Template Variables</Label>
+                <p className="text-sm text-muted-foreground">Enable dynamic variables in templates (e.g., {`{customer_name}`})</p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Share Templates</Label>
+                <p className="text-sm text-muted-foreground">Allow team members to use your templates</p>
+              </div>
+              <Switch />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <TemplateModal />
             </div>
           </CardContent>
         </Card>

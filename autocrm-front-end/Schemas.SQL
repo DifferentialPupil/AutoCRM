@@ -180,6 +180,17 @@ CREATE TABLE IF NOT EXISTS channels (
   CONSTRAINT channel_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
 
+CREATE TABLE IF NOT EXISTS templates (
+  id               UUID NOT NULL DEFAULT gen_random_uuid(),
+  user_id          UUID NOT NULL,
+  name             TEXT NOT NULL,
+  content          TEXT NULL,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT template_pkey PRIMARY KEY (id),
+  CONSTRAINT template_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+);
+
 -- Optional: Enable RLS on tables (you must then create policies in Supabase to enforce row-level security)
 -- ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE tickets ENABLE ROW LEVEL SECURITY;

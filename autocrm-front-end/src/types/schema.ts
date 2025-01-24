@@ -130,3 +130,14 @@ export interface Message {
   direct_message?: DirectMessage;
   channel?: Channel;
 }
+
+export interface Template {
+  id: string; // UUID
+  user_id: string; // UUID
+  name: string;
+  content: string | null;
+  created_at: string;
+  updated_at: string;
+  // Relations
+  user?: User;
+}

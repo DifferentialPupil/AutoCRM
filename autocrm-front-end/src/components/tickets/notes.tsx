@@ -7,8 +7,6 @@ export function Notes() {
     const { notes, error } = useNotesStore();
     if (error) return <div className="flex justify-center items-center h-full">Error: {error}</div>;
 
-    console.log("notes", notes);
-
     return (
         <div className="h-[calc(100vh-35rem)] overflow-y-auto space-y-3 pr-2">
             {notes.map((note: InternalNote) => (

@@ -11,7 +11,8 @@ import {
   AuditStore,
   DirectMessageStore,
   MessagesStore,
-  UsersStore
+  UsersStore,
+  TemplateStore
 } from '@/types/store';
 import { supabase } from '@/lib/supabase';
 
@@ -1042,4 +1043,177 @@ export const useMessagesStore = create<MessagesStore>((set) => ({
   //     };
   //   });
   // }
+}));
+
+export const useTemplateStore = create<TemplateStore>((set) => ({
+  // Initial State
+  templates: [],
+  isLoading: false,
+  error: null,
+
+  // Fetch Actions
+  fetchTemplates: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('templates')
+        .select(`
+          *
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      set({ templates: data });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch templates' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchTemplateById: async (id) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('templates')
+        .select(`
+          *
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      set({ templates: [data] });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch template' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchTemplatesByUser: async (userId) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('templates')
+        .select(`
+          *
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      set({ templates: data });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch templates' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchTemplatesBySearch: async (searchQuery) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('templates')
+        .select(`
+          *
+        `)
+        .textSearch('name', searchQuery, { type: 'websearch' })
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      set({ templates: data });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch templates' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  // Mutations
+  createTemplate: async (template) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { error } = await supabase
+        .from('templates')
+        .insert(template)
+        .select()
+        .single();
+
+      if (error) throw error;
+      // Real-time will handle state update
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to create template' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  updateTemplate: async (id, updates) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { error } = await supabase
+        .from('templates')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      // Real-time will handle state update
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to update template' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  deleteTemplate: async (id) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { error } = await supabase
+        .from('templates')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      // Real-time will handle state update
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to delete template' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  // State Updates
+  setTemplates: (templates) => set({ templates }),
+  setLoading: (isLoading) => set({ isLoading }),
+  setError: (error) => set({ error }),
+
+  // Real-time Updates
+  handleTemplateCreated: (template) => {
+    set((state) => ({
+      templates: [template, ...state.templates]
+    }));
+  },
+
+  handleTemplateUpdated: (template) => {
+    set((state) => ({
+      templates: state.templates.map(t => t.id === template.id ? template : t)
+    }));
+  },
+
+  handleTemplateDeleted: (id) => {
+    set((state) => ({
+      templates: state.templates.filter(t => t.id !== id)
+    }));
+  }
 }));

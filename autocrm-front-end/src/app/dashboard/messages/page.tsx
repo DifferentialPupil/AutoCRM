@@ -27,30 +27,6 @@ export default function MessagesPage() {
     }
   }, [user, fetchDirectMessagesByUser]);
 
-//   if (!user) {
-//     return (
-//       <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
-//         <Card className="w-full max-w-md">
-//           <CardHeader>
-//             <CardTitle className="text-center">Please sign in to view messages</CardTitle>
-//           </CardHeader>
-//         </Card>
-//       </div>
-//     );
-//   }
-
-//   if (isLoading) {
-//     return (
-//       <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
-//         <Card className="w-full max-w-md">
-//           <CardHeader>
-//             <CardTitle className="text-center">Loading messages...</CardTitle>
-//           </CardHeader>
-//         </Card>
-//       </div>
-//     );
-//   }
-
   if (error) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
