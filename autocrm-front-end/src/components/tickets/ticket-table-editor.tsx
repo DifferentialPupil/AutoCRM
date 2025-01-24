@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Ticket, TicketStatus } from "@/types/schema";
 import { memo, useState } from "react";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuthStore, useNotesStore } from "@/lib/store";
 import { Notes } from "@/components/tickets/notes";
 import { NotesSubscriptionProvider } from "@/providers/notes-subscription";
