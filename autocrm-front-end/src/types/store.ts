@@ -159,22 +159,59 @@ export interface AuditStore {
 
 export interface DirectMessageStore {
   // Data
-  directMessage: DirectMessage | null;
-  messages: Message[];
-
+  directMessages: DirectMessage[];
+  selectedDirectMessage: DirectMessage | null;
+  
   // UI States
   isLoading: boolean;
   error: string | null;
-
+  
   // Fetch Actions
-  fetchDirectMessage: () => Promise<void>;
-  fetchMessages: () => Promise<void>;
+  fetchDirectMessages: () => Promise<void>;
+  fetchDirectMessageById: (id: string) => Promise<void>;
+  fetchDirectMessagesByUser: (userId: string) => Promise<void>;
+  
+  // Mutations
+  createDirectMessage: (directMessage: Omit<DirectMessage, 'id' | 'created_at'>) => Promise<void>;
+  updateDirectMessage: (id: string, updates: Partial<DirectMessage>) => Promise<void>;
+  deleteDirectMessage: (id: string) => Promise<void>;
   
   // State Updates
+  setSelectedDirectMessage: (directMessage: DirectMessage | null) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
+  
+  // Real-time Updates
+  handleDirectMessageCreated: (directMessage: DirectMessage) => void;
+  handleDirectMessageUpdated: (directMessage: DirectMessage) => void;
+  handleDirectMessageDeleted: (id: string) => void;
+}
 
-  // Real-time Updates:
-  handleMessageReceived: (message: Message) => void;
-  sendMessage: (content: string) => void;
+export interface MessagesStore {
+  // Data
+  messages: Record<string, Message[]>; // directMessageId -> messages[]
+  
+  // UI States
+  isLoading: Record<string, boolean>;
+  error: Record<string, string | null>;
+  
+  // Fetch Actions
+  fetchMessages: (directMessageId: string) => Promise<void>;
+  
+  // Mutations
+  createMessage: (directMessageId: string, message: Omit<Message, 'id' | 'created_at'>) => Promise<void>;
+  updateMessage: (directMessageId: string, messageId: string, updates: Partial<Message>) => Promise<void>;
+  deleteMessage: (directMessageId: string, messageId: string) => Promise<void>;
+  
+  // State Updates
+  setLoading: (directMessageId: string, isLoading: boolean) => void;
+  setError: (directMessageId: string, error: string | null) => void;
+  
+  // Real-time Updates
+  handleMessageCreated: (directMessageId: string, message: Message) => void;
+  handleMessageUpdated: (directMessageId: string, message: Message) => void;
+  handleMessageDeleted: (directMessageId: string, messageId: string) => void;
+  
+  // Cleanup
+  // clearMessages: (directMessageId: string) => void;
 }

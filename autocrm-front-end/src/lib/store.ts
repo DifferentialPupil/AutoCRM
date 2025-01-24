@@ -9,7 +9,8 @@ import {
   CommentsState,
   SearchState,
   AuditStore,
-  DirectMessageStore
+  DirectMessageStore,
+  MessagesStore
 } from '@/types/store';
 import { supabase } from '@/lib/supabase';
 
@@ -529,30 +530,364 @@ export const useAuditStore = create<AuditStore>((set, get) => ({
 
 export const useDirectMessageStore = create<DirectMessageStore>((set) => ({
   // Initial State
-  directMessage: null,
-  messages: [],
+  directMessages: [],
+  selectedDirectMessage: null,
   isLoading: false,
   error: null,
 
   // Fetch Actions
-  fetchDirectMessage: async () => {
-    
+  fetchDirectMessages: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('direct_messages')
+        .select(`
+          *,
+          sender:sender_id(id, email),
+          recipient:recipient_id(id, email),
+          messages(*)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      set({ directMessages: data });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch direct messages' });
+    } finally {
+      set({ isLoading: false });
+    }
   },
 
-  fetchMessages: async () => {
+  fetchDirectMessageById: async (id) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('direct_messages')
+        .select(`
+          *,
+          sender:sender_id(id, email),
+          recipient:recipient_id(id, email),
+          messages(*)
+        `)
+        .eq('id', id)
+        .single();
 
+      if (error) throw error;
+      set({ selectedDirectMessage: data });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch direct message' });
+    } finally {
+      set({ isLoading: false });
+    }
   },
-  
+
+  fetchDirectMessagesByUser: async (userId) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { data, error } = await supabase
+        .from('direct_messages')
+        .select(`
+          *,
+          sender:sender_id(id, email),
+          recipient:recipient_id(id, email),
+          messages(*)
+        `)
+        .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      set({ directMessages: data });
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to fetch direct messages' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  // Mutations
+  createDirectMessage: async (directMessage) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { error } = await supabase
+        .from('direct_messages')
+        .insert(directMessage)
+        .select()
+        .single();
+
+      if (error) throw error;
+      // Real-time will handle state update
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to create direct message' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  updateDirectMessage: async (id, updates) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { error } = await supabase
+        .from('direct_messages')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      // Real-time will handle state update
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to update direct message' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  deleteDirectMessage: async (id) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { error } = await supabase
+        .from('direct_messages')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      // Real-time will handle state update
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : 'Failed to delete direct message' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
   // State Updates
+  setSelectedDirectMessage: (directMessage) => set({ selectedDirectMessage: directMessage }),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
 
-  // Real-time Updates:
-  handleMessageReceived: (message) => {
-    console.log(message);
+  // Real-time Updates
+  handleDirectMessageCreated: (directMessage) => {
+    set((state) => ({
+      directMessages: [directMessage, ...state.directMessages]
+    }));
   },
 
-  sendMessage: (content) => {
-    console.log(content);
+  handleDirectMessageUpdated: (directMessage) => {
+    set((state) => ({
+      directMessages: state.directMessages.map(dm => dm.id === directMessage.id ? directMessage : dm),
+      selectedDirectMessage: state.selectedDirectMessage?.id === directMessage.id ? directMessage : state.selectedDirectMessage
+    }));
+  },
+
+  handleDirectMessageDeleted: (id) => {
+    set((state) => ({
+      directMessages: state.directMessages.filter(dm => dm.id !== id),
+      selectedDirectMessage: state.selectedDirectMessage?.id === id ? null : state.selectedDirectMessage
+    }));
   }
+}));
+
+export const useMessagesStore = create<MessagesStore>((set) => ({
+  // Initial State
+  messages: {},
+  isLoading: {},
+  error: {},
+
+  // Fetch Actions
+  fetchMessages: async (directMessageId) => {
+    try {
+      set((state) => ({
+        isLoading: { ...state.isLoading, [directMessageId]: true },
+        error: { ...state.error, [directMessageId]: null }
+      }));
+      
+      const { data, error } = await supabase
+        .from('messages')
+        .select(`
+          *,
+          sender:sender_id(id, email)
+        `)
+        .eq('direct_message_id', directMessageId)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      
+      set((state) => ({
+        messages: { ...state.messages, [directMessageId]: data || [] }
+      }));
+    } catch (err) {
+      set((state) => ({
+        error: { 
+          ...state.error, 
+          [directMessageId]: err instanceof Error ? err.message : 'Failed to fetch messages' 
+        }
+      }));
+    } finally {
+      set((state) => ({
+        isLoading: { ...state.isLoading, [directMessageId]: false }
+      }));
+    }
+  },
+
+  // Mutations
+  createMessage: async (directMessageId, message) => {
+    try {
+      set((state) => ({
+        isLoading: { ...state.isLoading, [directMessageId]: true },
+        error: { ...state.error, [directMessageId]: null }
+      }));
+      
+      const { error } = await supabase
+        .from('messages')
+        .insert({ ...message, direct_message_id: directMessageId })
+        .select()
+        .single();
+
+      if (error) throw error;
+      // Real-time will handle state update
+    } catch (err) {
+      set((state) => ({
+        error: { 
+          ...state.error, 
+          [directMessageId]: err instanceof Error ? err.message : 'Failed to create message' 
+        }
+      }));
+    } finally {
+      set((state) => ({
+        isLoading: { ...state.isLoading, [directMessageId]: false }
+      }));
+    }
+  },
+
+  updateMessage: async (directMessageId, messageId, updates) => {
+    try {
+      set((state) => ({
+        isLoading: { ...state.isLoading, [directMessageId]: true },
+        error: { ...state.error, [directMessageId]: null }
+      }));
+      
+      const { error } = await supabase
+        .from('messages')
+        .update(updates)
+        .eq('id', messageId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      // Real-time will handle state update
+    } catch (err) {
+      set((state) => ({
+        error: { 
+          ...state.error, 
+          [directMessageId]: err instanceof Error ? err.message : 'Failed to update message' 
+        }
+      }));
+    } finally {
+      set((state) => ({
+        isLoading: { ...state.isLoading, [directMessageId]: false }
+      }));
+    }
+  },
+
+  deleteMessage: async (directMessageId, messageId) => {
+    try {
+      set((state) => ({
+        isLoading: { ...state.isLoading, [directMessageId]: true },
+        error: { ...state.error, [directMessageId]: null }
+      }));
+      
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', messageId);
+
+      if (error) throw error;
+      // Real-time will handle state update
+    } catch (err) {
+      set((state) => ({
+        error: { 
+          ...state.error, 
+          [directMessageId]: err instanceof Error ? err.message : 'Failed to delete message' 
+        }
+      }));
+    } finally {
+      set((state) => ({
+        isLoading: { ...state.isLoading, [directMessageId]: false }
+      }));
+    }
+  },
+
+  // State Updates
+  setLoading: (directMessageId, isLoading) => 
+    set((state) => ({
+      isLoading: { ...state.isLoading, [directMessageId]: isLoading }
+    })),
+
+  setError: (directMessageId, error) => 
+    set((state) => ({
+      error: { ...state.error, [directMessageId]: error }
+    })),
+
+  // Real-time Updates
+  handleMessageCreated: (directMessageId, message) => {
+    set((state) => ({
+      messages: {
+        ...state.messages,
+        [directMessageId]: [...(state.messages[directMessageId] || []), message]
+      }
+    }));
+  },
+
+  handleMessageUpdated: (directMessageId, message) => {
+    set((state) => ({
+      messages: {
+        ...state.messages,
+        [directMessageId]: (state.messages[directMessageId] || []).map(m => 
+          m.id === message.id ? message : m
+        )
+      }
+    }));
+  },
+
+  handleMessageDeleted: (directMessageId, messageId) => {
+    set((state) => ({
+      messages: {
+        ...state.messages,
+        [directMessageId]: (state.messages[directMessageId] || []).filter(m => 
+          m.id !== messageId
+        )
+      }
+    }));
+  },
+
+  // Cleanup
+  // clearMessages: (directMessageId) => {
+  //   set((state) => {
+  //     const { 
+  //       [directMessageId]: _, 
+  //       ...remainingMessages 
+  //     } = state.messages;
+      
+  //     const {
+  //       [directMessageId]: __,
+  //       ...remainingLoading
+  //     } = state.isLoading;
+      
+  //     const {
+  //       [directMessageId]: ___,
+  //       ...remainingErrors
+  //     } = state.error;
+
+  //     return {
+  //       messages: remainingMessages,
+  //       isLoading: remainingLoading,
+  //       error: remainingErrors
+  //     };
+  //   });
+  // }
 }));

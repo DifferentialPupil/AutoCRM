@@ -104,7 +104,8 @@ export interface DirectMessage {
   recipient_id: string; // UUID
   // Relations
   sender?: User;
-  reciever?: User;
+  recipient?: User;
+  messages?: Message[];
 }
 
 export interface Channel {
@@ -114,6 +115,7 @@ export interface Channel {
   user_id: string;
   // Relations
   user?: User;
+  messages?: Message[];
 }
 
 export interface Message {

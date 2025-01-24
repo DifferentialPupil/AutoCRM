@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS ticket_comments (
     ON UPDATE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS public.audit_logs (
+CREATE TABLE IF NOT EXISTS audit_logs (
   id               UUID NOT NULL DEFAULT gen_random_uuid(),
   table_name       TEXT NOT NULL,
   operation        TEXT NOT NULL,
@@ -146,6 +146,38 @@ CREATE TABLE IF NOT EXISTS public.audit_logs (
   changed_by       UUID NULL,
   CONSTRAINT audit_logs_pkey PRIMARY KEY (id),
   CONSTRAINT audit_logs_changed_by_fkey FOREIGN KEY (changed_by) REFERENCES public.users(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS direct_messages (
+  id               UUID NOT NULL DEFAULT gen_random_uuid(),
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  sender_id        UUID NOT NULL,
+  recipient_id     UUID NOT NULL,
+  CONSTRAINT direct_messages_pkey PRIMARY KEY (id),
+  CONSTRAINT direct_messages_recipient_id_fkey FOREIGN KEY (recipient_id) REFERENCES users(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
+  CONSTRAINT direct_messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES users(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS messages (
+  id               UUID NOT NULL DEFAULT gen_random_uuid(),
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  sender_id        UUID NOT NULL,
+  channel_id       UUID NULL,
+  direct_message_id UUID NULL,
+  content          TEXT NOT NULL,
+  CONSTRAINT messages_pkey PRIMARY KEY (id),
+  CONSTRAINT messages_channel_id_fkey FOREIGN KEY (channel_id) REFERENCES channels(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
+  CONSTRAINT messages_direct_message_id_fkey FOREIGN KEY (direct_message_id) REFERENCES direct_messages(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
+  CONSTRAINT messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES users(id) ON UPDATE RESTRICT ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS channels (
+  id               UUID NOT NULL DEFAULT gen_random_uuid(),
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  name             TEXT NOT NULL,
+  user_id          UUID NOT NULL,
+  CONSTRAINT channel_pkey PRIMARY KEY (id),
+  CONSTRAINT channel_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
 
 -- Optional: Enable RLS on tables (you must then create policies in Supabase to enforce row-level security)
