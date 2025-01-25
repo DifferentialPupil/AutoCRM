@@ -11,7 +11,6 @@ import {
   ChevronRight,
   Ticket,
   Settings,
-  Users,
   MessageSquare,
   LineChart,
   History
