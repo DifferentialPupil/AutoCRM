@@ -191,7 +191,7 @@ export default function TicketsPage() {
 
   return (
     <div>
-      <main className="container mx-auto py-5">
+      <main className="container mx-auto py-5 px-2">
         <div className="mb-6 flex justify-between items-center">
           <h1 className="text-3xl font-bold">Tickets</h1>
           <Dialog open={isCreatingTicket} onOpenChange={setIsCreatingTicket}>

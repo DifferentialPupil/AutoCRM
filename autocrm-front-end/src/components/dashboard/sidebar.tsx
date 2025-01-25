@@ -64,7 +64,7 @@ export function Sidebar() {
     <aside
       className={cn(
         'h-screen border-r bg-background transition-all duration-300',
-        sidebarOpen ? 'w-56' : 'w-16'
+        sidebarOpen ? 'w-56' : 'w-16',
       )}
       aria-label="Main navigation"
     >

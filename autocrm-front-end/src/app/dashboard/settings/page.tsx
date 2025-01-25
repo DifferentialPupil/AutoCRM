@@ -13,7 +13,7 @@ export default function SettingsPage() {
   const { theme, sidebarOpen, setTheme, setSidebarOpen } = useUIStore();
 
   return (
-    <div className="container mx-auto py-6 space-y-8">
+    <div className="container mx-auto py-6 space-y-8 px-4">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold">Settings</h1>
         <p className="text-muted-foreground">Manage your account and application preferences</p>
