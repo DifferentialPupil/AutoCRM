@@ -25,12 +25,6 @@ const navigationItems = [
     description: 'Manage support tickets'
   },
   {
-    title: 'Customers',
-    href: '/dashboard/customers',
-    icon: Users,
-    description: 'Customer management'
-  },
-  {
     title: 'Messages',
     href: '/dashboard/messages',
     icon: MessageSquare,
