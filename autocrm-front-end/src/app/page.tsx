@@ -21,9 +21,11 @@ export default function Home() {
                 Get Started
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="text-lg">
-              Book a Demo
-            </Button>
+            <Link href="https://calendly.com/azaldinfreidoon" target="_blank">
+              <Button size="lg" variant="outline" className="text-lg">
+                Book a Demo
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
