@@ -64,7 +64,9 @@ export function Sidebar() {
       <div className="flex h-16 items-center justify-between px-4 border-b">
         {sidebarOpen && (
           <span className="text-lg font-semibold">
-            AutoCRM
+            <Link href="/dashboard">
+              AutoCRM
+            </Link>
           </span>
         )}
         <Button
