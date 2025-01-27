@@ -1,0 +1,35 @@
+**Article Title:** Troubleshooting "Account Locked" Notifications  
+**Last Updated:** [Date]  
+**Applicable Products:** All Web Portal Access  
+
+---
+
+### Common Symptoms  
+- "Too many login attempts" error message  
+- Account status shows "Security Hold"  
+- Password reset emails not received  
+
+---
+
+### Step-by-Step Resolution  
+1. **Verify Identity**  
+   - Confirm 2FA recovery codes (if enabled)  
+   - Check government ID against account records  
+
+2. **Manual Unlock Process**  
+   1. Navigate to CRM > Security Dashboard  
+   2. Select "Release Security Hold" with manager approval  
+   3. Initiate password reset via secure portal  
+
+3. **Post-Resolution Checklist**  
+   - Advise enabling 2FA authentication  
+   - Confirm email/spam folder for reset links  
+
+---
+
+### Prevention Tips for Customers  
+- Use password manager tools  
+- Whitelist company email domain  
+- Update recovery phone number annually  
+
+---

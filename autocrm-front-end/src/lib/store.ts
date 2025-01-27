@@ -12,9 +12,12 @@ import {
   DirectMessageStore,
   MessagesStore,
   UsersStore,
-  TemplateStore
+  TemplateStore,
+  KnowledgeBaseState
 } from '@/types/store';
 import { supabase } from '@/lib/supabase';
+import { ArticleMetadata } from '@/types/schema';
+import { downloadArticle, listArticles, uploadArticle, deleteArticle, getArticleUrl } from '@/lib/storage';
 
 export const useUsersStore = create<UsersStore>((set) => ({
   // Initial State
@@ -1217,3 +1220,89 @@ export const useTemplateStore = create<TemplateStore>((set) => ({
     }));
   }
 }));
+
+export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
+  articles: [],
+  isLoading: false,
+  error: null,
+
+  fetchArticles: async () => {
+    try {
+      set({ isLoading: true, error: null })
+      const articles = await listArticles()
+      set({
+        articles: articles.map(article => ({
+          ...article,
+          path: article.name,
+          size: 0,
+          metadata: {
+            title: article.metadata?.title || article.name,
+            published: article.metadata?.published ?? false,
+            description: article.metadata?.description,
+            category: article.metadata?.category,
+            tags: article.metadata?.tags || [],
+            author: article.metadata?.author,
+            version: article.metadata?.version
+          },
+          url: getArticleUrl(article.name)
+        })),
+        isLoading: false
+      })
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Failed to fetch articles', isLoading: false })
+    }
+  },
+
+  uploadArticle: async (file: File, metadata: ArticleMetadata) => {
+    try {
+      set({ isLoading: true, error: null })
+      const result = await uploadArticle(file, metadata)
+      if (result) {
+        const articles = await listArticles()
+        set({
+          articles: articles.map(article => ({
+            ...article,
+            path: article.name,
+            size: 0,
+            metadata: {
+              title: article.metadata?.title || article.name,
+              published: article.metadata?.published ?? false,
+              description: article.metadata?.description,
+              category: article.metadata?.category,
+              tags: article.metadata?.tags || [],
+              author: article.metadata?.author,
+              version: article.metadata?.version
+            },
+            url: getArticleUrl(article.name)
+          })),
+          isLoading: false
+        })
+      }
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Failed to upload article', isLoading: false })
+    }
+  },
+
+  deleteArticle: async (path: string) => {
+    try {
+      set({ isLoading: true, error: null })
+      await deleteArticle(path)
+      const articles = get().articles.filter(article => article.path !== path)
+      set({ articles, isLoading: false })
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Failed to delete article', isLoading: false })
+    }
+  },
+
+  downloadArticle: async (path: string) => {
+    try {
+      set({ isLoading: true, error: null })
+      const blob = await downloadArticle(path)
+      set({ isLoading: false })
+      return blob
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Failed to download article', isLoading: false })
+      throw error
+    }
+  }
+}))

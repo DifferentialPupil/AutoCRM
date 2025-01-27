@@ -1,0 +1,34 @@
+**Article Title:** Addressing "Service Unavailable" Error Messages  
+**Last Updated:** [Date]  
+**Applicable Products:** Cloud Platform Users  
+
+---
+
+### Common Symptoms  
+- Intermittent 503 errors during peak hours  
+- Regional outage notifications in status dashboard  
+- Failed API calls with "resource unavailable"  
+
+---
+
+### Step-by-Step Resolution  
+1. **Confirm Outage Scope**  
+   - Check internal status page (portal/status)  
+   - Review regional incident reports  
+
+2. **Customer Communication**  
+   - Share estimated resolution time (if available)  
+   - Offer manual data export via CSR Toolbox > Emergency Export  
+
+3. **Compensation Protocol**  
+   - Apply service credit using SLA Calculator  
+   - Send outage follow-up template #OUTAGE-FOLLOWUP  
+
+---
+
+### Prevention Tips for Customers  
+- Enable multi-region failover settings  
+- Monitor webhook alerts for system status  
+- Maintain local cache of critical data  
+
+---

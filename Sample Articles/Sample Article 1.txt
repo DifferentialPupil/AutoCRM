@@ -1,0 +1,61 @@
+**Article Title:** Resolving "Payment Failed" Errors for Subscription Renewals  
+**Last Updated:** 01/26/2025
+**Applicable Products:** All Premium Subscriptions  
+
+---
+
+### Common Symptoms  
+- Customer receives "Payment method declined" error during renewal  
+- Subscription status shows "Payment Failed" in customer portal  
+- Automatic retries have been unsuccessful for 3+ days  
+
+---
+
+### Step-by-Step Resolution  
+
+1. **Verify Payment Details**  
+   - Ask customer to confirm:  
+     - Card expiration date  
+     - Billing ZIP code matches card records  
+     - Available credit/balance on payment method  
+
+2. **Update Payment Method**  
+   - Guide customer through:  
+     1. Logging into account portal  
+     2. Navigating to Billing > Payment Methods  
+     3. Adding new card or updating existing details  
+
+3. **Initiate Manual Retry** (CSR Toolbox > Billing Override)  
+   - Use "Force Renewal Attempt" button in CRM dashboard  
+   - Wait 2 minutes for system confirmation  
+
+4. **Confirm Resolution**  
+   - Check subscription status shows "Active"  
+   - Send confirmation email through CRM template #PAYMENT-FIXED  
+
+---
+
+### Prevention Tips for Customers  
+- Enable payment method expiration reminders  
+- Maintain backup payment method on file  
+- Update card details before traveling internationally  
+
+---
+
+### Escalation Path  
+Contact Tier 2 Support if:  
+- Multiple payment methods fail consecutively  
+- Customer claims card was charged but status remains inactive  
+- Error persists after successful payment update  
+
+**Required Information for Escalation:**  
+- Last 4 digits of payment method  
+- 3 most recent error timestamps  
+- Screenshot of customer's Billing page  
+
+---
+
+**Internal Reference:** [Knowledge Base Article #123]  
+**CRM Quick Link:** [Payment Troubleshooting Workflow]  
+
+--- 

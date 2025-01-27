@@ -13,7 +13,8 @@ import {
   Settings,
   MessageSquare,
   LineChart,
-  History
+  History,
+  BookOpen
 } from 'lucide-react';
 
 const navigationItems = [
@@ -40,6 +41,12 @@ const navigationItems = [
     href: '/dashboard/audit',
     icon: History,
     description: 'System audit logs'
+  },
+  {
+    title: 'Knowledge Base',
+    href: '/dashboard/knowledge',
+    icon: BookOpen,
+    description: 'Articles and documentation'
   },
   {
     title: 'Settings',

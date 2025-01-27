@@ -9,7 +9,9 @@ import {
   DirectMessage,
   Message,
   User as AppUser,
-  Template
+  Template,
+  ArticleMetadata,
+  KnowledgeBaseArticle
 } from './schema';
 
 export interface UsersStore {
@@ -275,4 +277,14 @@ export interface TemplateStore {
   handleTemplateCreated: (template: Template) => void;
   handleTemplateUpdated: (template: Template) => void;
   handleTemplateDeleted: (id: string) => void;
+}
+
+export interface KnowledgeBaseState {
+  articles: KnowledgeBaseArticle[]
+  isLoading: boolean
+  error: string | null
+  fetchArticles: () => Promise<void>
+  uploadArticle: (file: File, metadata: ArticleMetadata) => Promise<void>
+  deleteArticle: (path: string) => Promise<void>
+  downloadArticle: (path: string) => Promise<Blob>
 }

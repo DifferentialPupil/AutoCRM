@@ -3,6 +3,7 @@ export type UserRole = 'customer' | 'employee' | 'admin';
 export type TicketStatus = 'open' | 'pending' | 'resolved';
 export type TicketPriority = 'low' | 'medium' | 'high';
 export type CustomFieldType = 'text' | 'number' | 'date' | 'select';
+export type ArticleCategory = 'general' | 'tutorial' | 'faq' | 'troubleshooting' | 'api'
 
 // Base Types
 export interface User {
@@ -140,4 +141,26 @@ export interface Template {
   updated_at: string;
   // Relations
   user?: User;
+}
+
+export interface ArticleMetadata {
+  title: string
+  description?: string
+  category?: ArticleCategory
+  tags?: string[]
+  author?: string
+  published: boolean
+  version?: string
+}
+
+export interface KnowledgeBaseArticle {
+  id: string
+  name: string
+  path: string
+  size: number
+  created_at: string
+  updated_at: string
+  last_accessed_at: string
+  metadata?: ArticleMetadata
+  url: string
 }
