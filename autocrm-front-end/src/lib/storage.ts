@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { ArticleMetadata } from '@/types/schema'
 
 const BUCKET_NAME = process.env.SUPABASE_STORAGE_BUCKET_NAME || 'knowledge_base'
 
@@ -8,7 +9,7 @@ export type ArticleFile = {
   updated_at: string
   created_at: string
   last_accessed_at: string
-  metadata: Record<string, any>
+  metadata?: ArticleMetadata
 }
 
 /**
@@ -24,20 +25,23 @@ export async function listArticles(): Promise<ArticleFile[]> {
         throw new Error(`Failed to list articles: ${error.message}`)
     }
 
-    return data;
+    return data.map((file) => ({
+        ...file,
+        metadata: file.metadata as ArticleMetadata
+    }));
 }
 
 /**
  * Uploads an article file to the knowledge base bucket
  */
-export async function uploadArticle(file: File, metadata?: Record<string, any>) {
+export async function uploadArticle(file: File, metadata?: ArticleMetadata) {
   const { data, error } = await supabase
     .storage
     .from(BUCKET_NAME)
     .upload(`${file.name}`, file, {
       upsert: false,
       contentType: file.type,
-      metadata
+      metadata: metadata
     })
 
   if (error) {

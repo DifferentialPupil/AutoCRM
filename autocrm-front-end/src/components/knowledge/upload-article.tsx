@@ -69,7 +69,7 @@ export function UploadArticle({ children }: UploadArticleProps) {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to upload article",
+        description: "Failed to upload article: " + error,
         variant: "destructive",
       })
     } finally {
