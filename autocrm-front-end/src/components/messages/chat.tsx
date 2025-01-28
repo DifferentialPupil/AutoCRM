@@ -8,11 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { MessageSquare, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { message } from '@/actions/ai-agent';
 
 export default function Chat() {
   const [newMessage, setNewMessage] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { selectedDirectMessage } = useDirectMessageStore();
+  const { selectedDirectMessage, isSelectedDirectMessageAIAgent } = useDirectMessageStore();
   const { messages, createMessage, error } = useMessagesStore();
   const { user } = useAuthStore();
 
@@ -37,11 +38,22 @@ export default function Chat() {
     if (!user || !selectedDirectMessage || !newMessage.trim()) return;
 
     await createMessage(selectedDirectMessage.id, {
-      content: newMessage.trim(),
-      sender_id: user.id,
-      channel_id: null,
-      direct_message_id: selectedDirectMessage.id
-    });
+        content: newMessage.trim(),
+        sender_id: user.id,
+        channel_id: null,
+        direct_message_id: selectedDirectMessage.id
+      });
+
+    if (isSelectedDirectMessageAIAgent()) {
+      const result = await message(newMessage.trim());
+
+      createMessage(selectedDirectMessage.id, {
+        content: result,
+        sender_id: '2c5dea55-3904-4aef-9439-048a4df68fba',
+        channel_id: null,
+        direct_message_id: selectedDirectMessage.id
+      });
+    }
 
     setNewMessage('');
   };

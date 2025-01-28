@@ -676,7 +676,7 @@ export const useAuditStore = create<AuditStore>((set, get) => ({
   },
 }));
 
-export const useDirectMessageStore = create<DirectMessageStore>((set) => ({
+export const useDirectMessageStore = create<DirectMessageStore>((set, get) => ({
   // Initial State
   directMessages: [],
   selectedDirectMessage: null,
@@ -813,6 +813,17 @@ export const useDirectMessageStore = create<DirectMessageStore>((set) => ({
   setSelectedDirectMessage: (directMessage) => set({ selectedDirectMessage: directMessage }),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
+
+  // Utility
+  isSelectedDirectMessageAIAgent: () => {
+    const { selectedDirectMessage } = get();
+    if (!selectedDirectMessage) return false;
+
+    if (selectedDirectMessage.recipient_id === '2c5dea55-3904-4aef-9439-048a4df68fba') {
+      return true;
+    }
+    return false;
+  },
 
   // Real-time Updates
   handleDirectMessageCreated: async (directMessage) => {

@@ -213,6 +213,9 @@ export interface DirectMessageStore {
   setSelectedDirectMessage: (directMessage: DirectMessage | null) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
+
+  // Utility
+  isSelectedDirectMessageAIAgent: () => boolean;
   
   // Real-time Updates
   handleDirectMessageCreated: (directMessage: DirectMessage) => void;
