@@ -88,7 +88,7 @@ export default function Users({ onSelect }: UsersProps) {
                         {user.email.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="flex-1 truncate">{user.email}</span>
+                    <span className="flex-1 truncate max-w-xs" title={user.email}>{user.email}</span>
                   </button>
                 ))}
               </div>

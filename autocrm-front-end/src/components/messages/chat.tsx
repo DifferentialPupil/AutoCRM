@@ -133,7 +133,7 @@ export default function Chat() {
                       : 'bg-muted rounded-tl-none'
                   )}
                 >
-                  <p className="text-sm">{message.content}</p>
+                  <p className="text-sm max-w-lg">{message.content}</p>
                   <p className="text-xs opacity-70 mt-1">
                     {new Date(message.created_at).toLocaleTimeString()}
                   </p>
