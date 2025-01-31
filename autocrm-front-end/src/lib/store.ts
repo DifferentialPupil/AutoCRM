@@ -13,7 +13,7 @@ import {
   MessagesStore,
   UsersStore,
   TemplateStore,
-  KnowledgeBaseState
+  KnowledgeBaseStore
 } from '@/types/store';
 import { supabase } from '@/lib/supabase';
 import { ArticleMetadata } from '@/types/schema';
@@ -1031,32 +1031,6 @@ export const useMessagesStore = create<MessagesStore>((set) => ({
       }
     }));
   },
-
-  // Cleanup
-  // clearMessages: (directMessageId) => {
-  //   set((state) => {
-  //     const { 
-  //       [directMessageId]: _, 
-  //       ...remainingMessages 
-  //     } = state.messages;
-      
-  //     const {
-  //       [directMessageId]: __,
-  //       ...remainingLoading
-  //     } = state.isLoading;
-      
-  //     const {
-  //       [directMessageId]: ___,
-  //       ...remainingErrors
-  //     } = state.error;
-
-  //     return {
-  //       messages: remainingMessages,
-  //       isLoading: remainingLoading,
-  //       error: remainingErrors
-  //     };
-  //   });
-  // }
 }));
 
 export const useTemplateStore = create<TemplateStore>((set) => ({
@@ -1232,7 +1206,7 @@ export const useTemplateStore = create<TemplateStore>((set) => ({
   }
 }));
 
-export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
+export const useKnowledgeBaseStore = create<KnowledgeBaseStore>((set, get) => ({
   articles: [],
   isLoading: false,
   error: null,
@@ -1264,7 +1238,7 @@ export const useKnowledgeBaseStore = create<KnowledgeBaseState>((set, get) => ({
     }
   },
 
-  uploadArticle: async (file: File, metadata: ArticleMetadata) => {
+  uploadArticle: async (file: File, metadata: Partial<ArticleMetadata>) => {
     try {
       set({ isLoading: true, error: null })
       const result = await uploadArticle(file, metadata)

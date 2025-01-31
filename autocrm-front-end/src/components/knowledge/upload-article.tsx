@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast";
+import { uploadFile as uploadFileToVectorStore } from "@/lib/vector-store";
 
 interface UploadArticleProps {
   children: React.ReactNode
@@ -43,7 +44,7 @@ export function UploadArticle({ children }: UploadArticleProps) {
     version: '1.0.0'
   })
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
     if (selectedFile) {
       setFile(selectedFile)
@@ -60,20 +61,22 @@ export function UploadArticle({ children }: UploadArticleProps) {
 
     setIsUploading(true)
     try {
-      await uploadArticle(file, metadata as ArticleMetadata)
-      toast({
-        title: "Success",
-        description: "Article uploaded successfully",
-      })
-      setOpen(false)
+        await uploadArticle(file, metadata)
+        uploadFileToVectorStore(file, metadata)
+
+        toast({
+            title: "Success",
+            description: "Article uploaded successfully",
+        })
+        setOpen(false)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to upload article: " + error,
-        variant: "destructive",
-      })
+        toast({
+            title: "Error",
+            description: "Failed to upload article: " + error,
+            variant: "destructive",
+        })
     } finally {
-      setIsUploading(false)
+        setIsUploading(false)
     }
   }
 

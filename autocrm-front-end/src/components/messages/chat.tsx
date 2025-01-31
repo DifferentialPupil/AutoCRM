@@ -37,26 +37,32 @@ export default function Chat() {
     e.preventDefault();
     if (!user || !selectedDirectMessage || !newMessage.trim()) return;
 
+    setNewMessage('');
+
     await createMessage(selectedDirectMessage.id, {
         content: newMessage.trim(),
         sender_id: user.id,
         channel_id: null,
         direct_message_id: selectedDirectMessage.id
-      });
+    });
 
     if (isSelectedDirectMessageAIAgent()) {
-      const result = await message(newMessage.trim());
-
-      createMessage(selectedDirectMessage.id, {
-        content: result,
-        sender_id: '2c5dea55-3904-4aef-9439-048a4df68fba',
-        channel_id: null,
-        direct_message_id: selectedDirectMessage.id
-      });
+        handleAIAgentResponse();
     }
 
-    setNewMessage('');
   };
+
+    const handleAIAgentResponse = async () => {
+        if (!user || !selectedDirectMessage || !newMessage.trim()) return;
+        const result = await message(newMessage.trim());
+
+        createMessage(selectedDirectMessage.id, {
+            content: result,
+            sender_id: '2c5dea55-3904-4aef-9439-048a4df68fba',
+            channel_id: null,
+            direct_message_id: selectedDirectMessage.id
+        });
+    }
 
   if (!selectedDirectMessage) {
     return (

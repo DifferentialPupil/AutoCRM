@@ -34,7 +34,6 @@ export function NotesInput({ handleAddNote }: NotesInputProps) {
     };
 
     const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        console.log(template);
         const value = e.target.value;
         setNewNote(value);
 
@@ -56,8 +55,6 @@ export function NotesInput({ handleAddNote }: NotesInputProps) {
             setTemplate("");
             setBeginDetected(false);
         }
-
-        console.log(template);
     };
 
     const addNote = () => {

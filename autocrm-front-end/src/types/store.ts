@@ -282,12 +282,12 @@ export interface TemplateStore {
   handleTemplateDeleted: (id: string) => void;
 }
 
-export interface KnowledgeBaseState {
+export interface KnowledgeBaseStore {
   articles: KnowledgeBaseArticle[]
   isLoading: boolean
   error: string | null
   fetchArticles: () => Promise<void>
-  uploadArticle: (file: File, metadata: ArticleMetadata) => Promise<void>
+  uploadArticle: (file: File, metadata: Partial<ArticleMetadata>) => Promise<void>
   deleteArticle: (path: string) => Promise<void>
   downloadArticle: (path: string) => Promise<Blob>
 }

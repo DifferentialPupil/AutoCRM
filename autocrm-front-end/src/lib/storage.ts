@@ -34,7 +34,7 @@ export async function listArticles(): Promise<ArticleFile[]> {
 /**
  * Uploads an article file to the knowledge base bucket
  */
-export async function uploadArticle(file: File, metadata?: ArticleMetadata) {
+export async function uploadArticle(file: File, metadata?: Partial<ArticleMetadata>) {
   const { data, error } = await supabase
     .storage
     .from(BUCKET_NAME)
