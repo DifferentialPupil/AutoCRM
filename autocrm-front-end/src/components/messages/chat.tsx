@@ -37,14 +37,14 @@ export default function Chat() {
     e.preventDefault();
     if (!user || !selectedDirectMessage || !newMessage.trim()) return;
 
-    setNewMessage('');
-
     await createMessage(selectedDirectMessage.id, {
         content: newMessage.trim(),
         sender_id: user.id,
         channel_id: null,
         direct_message_id: selectedDirectMessage.id
     });
+
+    setNewMessage('');
 
     if (isSelectedDirectMessageAIAgent()) {
         handleAIAgentResponse();
