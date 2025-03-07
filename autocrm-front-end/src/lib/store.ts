@@ -701,7 +701,7 @@ const getDateRangeFromTimePeriod = (period: 'day' | 'week' | 'month' | 'year'): 
 };
 
 // Type guard for ticket status
-const isValidTicketStatus = (status: any): status is TicketStatus => {
+const isValidTicketStatus = (status: TicketStatus): status is TicketStatus => {
   return status === 'open' || status === 'pending' || status === 'resolved';
 };
 
