@@ -13,10 +13,11 @@ import {
   MessagesStore,
   UsersStore,
   TemplateStore,
-  KnowledgeBaseStore
+  KnowledgeBaseStore,
+  DashboardStore
 } from '@/types/store';
 import { supabase } from '@/lib/supabase';
-import { ArticleMetadata } from '@/types/schema';
+import { ArticleMetadata, TicketStatus } from '@/types/schema';
 import { downloadArticle, listArticles, uploadArticle, deleteArticle, getArticleUrl } from '@/lib/storage';
 
 export const useUsersStore = create<UsersStore>((set) => ({
@@ -674,6 +675,274 @@ export const useAuditStore = create<AuditStore>((set, get) => ({
       .map(([date, count]) => ({ date, count }))
       .sort((a, b) => a.date.localeCompare(b.date));
   },
+}));
+
+// Helper function to get date range based on time period
+const getDateRangeFromTimePeriod = (period: 'day' | 'week' | 'month' | 'year'): { startDate: Date, endDate: Date } => {
+  const endDate = new Date();
+  const startDate = new Date();
+  
+  switch (period) {
+    case 'day':
+      startDate.setHours(0, 0, 0, 0);
+      break;
+    case 'week':
+      startDate.setDate(startDate.getDate() - 7);
+      break;
+    case 'month':
+      startDate.setMonth(startDate.getMonth() - 1);
+      break;
+    case 'year':
+      startDate.setFullYear(startDate.getFullYear() - 1);
+      break;
+  }
+  
+  return { startDate, endDate };
+};
+
+// Type guard for ticket status
+const isValidTicketStatus = (status: any): status is TicketStatus => {
+  return status === 'open' || status === 'pending' || status === 'resolved';
+};
+
+export const useDashboardStore = create<DashboardStore>((set, get) => ({
+  // Initial State for Dashboard
+  ticketsByStatus: {
+    open: 0,
+    pending: 0,
+    resolved: 0
+  },
+  ticketsResolvedByDate: [],
+  ticketsOpenedByDate: [],
+  timePeriod: 'month',
+  isLoading: false,
+  error: null,
+
+  // Fetch Dashboard Data
+  fetchDashboardData: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      // Get current time period filter
+      const { timePeriod } = get();
+      
+      // 1. Fetch tickets for status counts
+      const { data: tickets, error: ticketsError } = await supabase
+        .from('tickets')
+        .select('id, status, created_at, updated_at');
+      
+      if (ticketsError) throw ticketsError;
+      
+      // Process tickets by status
+      const statusCounts = {
+        open: 0,
+        pending: 0,
+        resolved: 0
+      };
+      
+      tickets.forEach(ticket => {
+        if (isValidTicketStatus(ticket.status)) {
+          statusCounts[ticket.status] += 1;
+        }
+      });
+      
+      // 2. Fetch audit logs for resolved and opened tickets
+      const { data: auditLogs, error: auditLogsError } = await supabase
+        .from('audit_logs')
+        .select('*')
+        .eq('table_name', 'tickets')
+        .order('changed_at', { ascending: false });
+      
+      if (auditLogsError) throw auditLogsError;
+      
+      // Process audit logs for ticket status changes
+      const resolvedByDate: Record<string, number> = {};
+      const openedByDate: Record<string, number> = {};
+      
+      // Get date range based on time period
+      const dateRange = getDateRangeFromTimePeriod(timePeriod);
+      
+      // Process resolved tickets from audit logs
+      auditLogs.forEach(log => {
+        // Skip if null data
+        if (!log.old_data || !log.new_data) return;
+        
+        try {
+          const oldData = typeof log.old_data === 'string' ? JSON.parse(log.old_data) : log.old_data;
+          const newData = typeof log.new_data === 'string' ? JSON.parse(log.new_data) : log.new_data;
+          
+          const logDate = new Date(log.changed_at).toISOString().split('T')[0];
+          
+          // If within date range
+          if (new Date(logDate) >= dateRange.startDate && new Date(logDate) <= dateRange.endDate) {
+            // Count resolved tickets
+            if (log.operation === 'UPDATE' && oldData.status !== 'resolved' && newData.status === 'resolved') {
+              resolvedByDate[logDate] = (resolvedByDate[logDate] || 0) + 1;
+            }
+            
+            // Count created tickets
+            if (log.operation === 'INSERT') {
+              openedByDate[logDate] = (openedByDate[logDate] || 0) + 1;
+            }
+          }
+        } catch (e) {
+          console.error('Error processing audit log:', e);
+        }
+      });
+      
+      // Convert records to arrays for graphing
+      const resolvedTicketsByDate = Object.entries(resolvedByDate)
+        .map(([date, count]) => ({ date, count }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+      
+      const openedTicketsByDate = Object.entries(openedByDate)
+        .map(([date, count]) => ({ date, count }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+      
+      // Update state with the fetched data
+      set({
+        ticketsByStatus: statusCounts,
+        ticketsResolvedByDate: resolvedTicketsByDate,
+        ticketsOpenedByDate: openedTicketsByDate,
+        isLoading: false
+      });
+      
+    } catch (err) {
+      set({ 
+        error: err instanceof Error ? err.message : 'Failed to fetch dashboard data',
+        isLoading: false 
+      });
+    }
+  },
+  
+  // Set time period for filtering
+  setTimePeriod: (period) => {
+    set({ timePeriod: period });
+    get().fetchDashboardData(); // Reload data with new period
+  },
+  
+  // State Updates
+  setLoading: (isLoading) => set({ isLoading }),
+  setError: (error) => set({ error }),
+  
+  // Real-time Updates
+  handleTicketCreated: (ticket) => {
+    // Update tickets by status count
+    if (isValidTicketStatus(ticket.status)) {
+      set((state) => ({
+        ticketsByStatus: {
+          ...state.ticketsByStatus,
+          [ticket.status]: state.ticketsByStatus[ticket.status] + 1
+        }
+      }));
+    }
+    
+    // Add to opened tickets if today
+    const today = new Date().toISOString().split('T')[0];
+    set((state) => {
+      const existingOpened = [...state.ticketsOpenedByDate];
+      const todayIndex = existingOpened.findIndex(item => item.date === today);
+      
+      if (todayIndex >= 0) {
+        existingOpened[todayIndex] = { 
+          ...existingOpened[todayIndex], 
+          count: existingOpened[todayIndex].count + 1 
+        };
+      } else {
+        existingOpened.push({ date: today, count: 1 });
+      }
+      
+      return { ticketsOpenedByDate: existingOpened };
+    });
+  },
+  
+  handleTicketUpdated: (ticket, oldTicket) => {
+    // If status changed, update counts
+    if (ticket.status !== oldTicket.status) {
+      const validOldStatus = isValidTicketStatus(oldTicket.status);
+      const validNewStatus = isValidTicketStatus(ticket.status);
+      
+      if (validOldStatus && validNewStatus) {
+        set((state) => ({
+          ticketsByStatus: {
+            ...state.ticketsByStatus,
+            [oldTicket.status]: Math.max(0, state.ticketsByStatus[oldTicket.status] - 1),
+            [ticket.status]: state.ticketsByStatus[ticket.status] + 1
+          }
+        }));
+      } else if (validOldStatus) {
+        set((state) => ({
+          ticketsByStatus: {
+            ...state.ticketsByStatus,
+            [oldTicket.status]: Math.max(0, state.ticketsByStatus[oldTicket.status] - 1)
+          }
+        }));
+      } else if (validNewStatus) {
+        set((state) => ({
+          ticketsByStatus: {
+            ...state.ticketsByStatus,
+            [ticket.status]: state.ticketsByStatus[ticket.status] + 1
+          }
+        }));
+      }
+      
+      // If resolved, add to resolved tickets
+      if (ticket.status === 'resolved' && oldTicket.status !== 'resolved') {
+        const today = new Date().toISOString().split('T')[0];
+        set((state) => {
+          const existingResolved = [...state.ticketsResolvedByDate];
+          const todayIndex = existingResolved.findIndex(item => item.date === today);
+          
+          if (todayIndex >= 0) {
+            existingResolved[todayIndex] = { 
+              ...existingResolved[todayIndex], 
+              count: existingResolved[todayIndex].count + 1 
+            };
+          } else {
+            existingResolved.push({ date: today, count: 1 });
+          }
+          
+          return { ticketsResolvedByDate: existingResolved };
+        });
+      }
+    }
+  },
+  
+  handleTicketDeleted: (ticket) => {
+    // Update counts
+    if (isValidTicketStatus(ticket.status)) {
+      set((state) => ({
+        ticketsByStatus: {
+          ...state.ticketsByStatus,
+          [ticket.status]: Math.max(0, state.ticketsByStatus[ticket.status] - 1)
+        }
+      }));
+    }
+  },
+  
+  // Analytics Helpers
+  getTicketTrends: () => {
+    const { ticketsOpenedByDate, ticketsResolvedByDate } = get();
+    
+    // Calculate open rate (tickets opened per day in the period)
+    const totalOpened = ticketsOpenedByDate.reduce((sum, item) => sum + item.count, 0);
+    const daysInPeriod = ticketsOpenedByDate.length || 1; // Avoid division by zero
+    const openRate = totalOpened / daysInPeriod;
+    
+    // Calculate resolve rate (tickets resolved per day in the period)
+    const totalResolved = ticketsResolvedByDate.reduce((sum, item) => sum + item.count, 0);
+    const resolveRate = totalResolved / daysInPeriod;
+    
+    // Calculate average resolution time (simple approximation based on available data)
+    // In a real system, this would need more precise ticket-level data
+    const averageResolutionTime = totalOpened > 0 ? (totalResolved / totalOpened) * 24 : 0; // in hours
+    
+    return {
+      openRate,
+      resolveRate,
+      averageResolutionTime
+    };
+  }
 }));
 
 export const useDirectMessageStore = create<DirectMessageStore>((set, get) => ({

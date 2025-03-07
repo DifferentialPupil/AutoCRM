@@ -11,7 +11,8 @@ import {
   User as AppUser,
   Template,
   ArticleMetadata,
-  KnowledgeBaseArticle
+  KnowledgeBaseArticle,
+  TicketStatus
 } from './schema';
 
 export interface UsersStore {
@@ -290,4 +291,40 @@ export interface KnowledgeBaseStore {
   uploadArticle: (file: File, metadata: Partial<ArticleMetadata>) => Promise<void>
   deleteArticle: (path: string) => Promise<void>
   downloadArticle: (path: string) => Promise<Blob>
+}
+
+export interface DashboardStore {
+  // Dashboard Data
+  ticketsByStatus: Record<TicketStatus, number>;
+  ticketsResolvedByDate: { date: string; count: number }[];
+  ticketsOpenedByDate: { date: string; count: number }[];
+  
+  // Time Periods
+  timePeriod: 'day' | 'week' | 'month' | 'year';
+  
+  // UI States
+  isLoading: boolean;
+  error: string | null;
+  
+  // Fetch Actions
+  fetchDashboardData: () => Promise<void>;
+  
+  // Filter Actions
+  setTimePeriod: (period: 'day' | 'week' | 'month' | 'year') => void;
+  
+  // State Updates
+  setLoading: (isLoading: boolean) => void;
+  setError: (error: string | null) => void;
+  
+  // Real-time Updates
+  handleTicketCreated: (ticket: Ticket) => void;
+  handleTicketUpdated: (ticket: Ticket, oldTicket: Ticket) => void;
+  handleTicketDeleted: (ticket: Ticket) => void;
+  
+  // Analytics Helpers
+  getTicketTrends: () => {
+    openRate: number;
+    resolveRate: number;
+    averageResolutionTime: number;
+  };
 }
